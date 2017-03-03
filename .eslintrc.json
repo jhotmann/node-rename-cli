@@ -1,0 +1,19 @@
+{
+    "parserOptions": {
+        "ecmaVersion": 5,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+        "semi": 2,
+        "eqeqeq": ["warn", "smart"],
+        "no-unused-vars": 1,
+        "no-console": 0
+    },
+    "env": {
+        "node": true
+    }
+}

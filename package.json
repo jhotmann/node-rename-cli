@@ -1,0 +1,25 @@
+{
+  "name": "rename-cli",
+  "version": "0.0.1",
+  "description": "A command line utility for renaming files",
+  "main": "index.js",
+  "preferGlobal": true,
+  "bin": {
+    "rename": "./bin.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jordan Hotmann",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jhotmann/node-rename-cli.git"
+  },
+  "dependencies": {
+    "file-exists": "^3.0.1",
+    "lodash": "^4.17.4",
+    "minimist": "^1.2.0",
+    "prompt-sync": "^4.1.4"
+  }
+}
