@@ -1,7 +1,7 @@
 # Rename-CLI [Beta]
 A tool for renaming files quickly, especially multiple files at once.
 
-Currently in beta as it has only been tested on MacOS and should function great on Linux as well but Windows is currently an known.  I will be adding more variable replacements over time or you can submit some via pull request.  See replacements.js for example.
+Currently in beta as it has only been tested on MacOS and should function great on Linux but Windows is currently not working due to how the command prompt handles wildcards. I will be fixing this at some point (probably using glob), but it's not my highest priority. I will also be adding more variable replacements over time or you can submit some via pull request.  See replacements.js for example.
 
 ```
 Usage: rename [options] files new-file-name
