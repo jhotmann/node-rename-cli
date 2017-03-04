@@ -1,13 +1,13 @@
 # Rename-CLI [Beta]
 A tool for renaming files quickly, especially multiple files at once.
 
-Currently in beta as it has only been tested on MacOS and should function great on Linux but Windows is currently not working due to how the command prompt handles wildcards. I will be fixing this at some point (probably using glob), but it's not my highest priority. I will also be adding more variable replacements over time or you can submit some via pull request.  See replacements.js for example.
+Currently in beta as it has only been tested on MacOS but should also function great on Linux. I added [glob](https://github.com/isaacs/node-glob) file search ability so Windows should work with wildcards but it hasn't been tested (use **rname** command instead of rename since Windows already has a rename command). I will also be adding more variable replacements over time or you can submit some via pull request.  See replacements.js for example.
 
 ```
 Usage: rename [options] files new-file-name
  If you rename multiple files at once, an index will be appended
- to the end of the file unless otherwise specified with {{i}}, or
- the original file name is used via {{f}}.
+ to the end of the file unless the resulting file name will be
+ unique. Like when using {{f}} or {{g}}.
  If you do not specify a file extension in the new file name, the
  original file extension will be used.
 
@@ -19,12 +19,17 @@ Options:
 
 Available Variables:
 
- {{i}}    Index: The index of the file when renaming multiple files
- {{f}}    File name: The original name of the file
- {{p}}    Parent directory: The name of the parent directory
- {{y}}    Year: The current year
- {{m}}    Month: The current month
- {{d}}    Day: The current day
+ {{i}}         Index: The index of the file when renaming multiple files
+ {{f}}         File name: The original name of the file
+ {{fl}}        File name lower: The original name of the file in lower case
+ {{fu}}        File name upper: The original name of the file in upper case
+ {{fc}}        File name camel case: The original name of the file in camel case
+ {{fp}}        File name pascal case: The original name of the file in pascal case
+ {{p}}         Parent directory: The name of the parent directory
+ {{y}}         Year: The current year
+ {{m}}         Month: The current month
+ {{d}}         Day: The current day
+ {{g}}         GUID: A globally unique identifier
 
 Examples:
 
@@ -46,6 +51,7 @@ Examples:
 
 ## Libraries Used
 - Minimist https://github.com/substack/minimist
+- glob https://github.com/isaacs/node-glob
 - file-exists https://github.com/scottcorgan/file-exists
 - prompt-sync https://github.com/0x00A/prompt-sync
 - lodash https://lodash.com/

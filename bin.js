@@ -10,8 +10,8 @@ if (argv.help || argv.h) {
   console.log('');
   console.log('Usage: %s [options] files new-file-name', commandName);
   console.log(' If you rename multiple files at once, an index will be appended');
-  console.log(' to the end of the file unless otherwise specified with {{i}}, or');
-  console.log(' the original file name is used via {{f}}.');
+  console.log(' to the end of the file unless the resulting file name will be');
+  console.log(' unique. Like when using {{f}} or {{g}}.');
   console.log(' If you do not specify a file extension in the new file name, the');
   console.log(' original file extension will be used.');
   console.log('');

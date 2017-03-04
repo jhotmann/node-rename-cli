@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const fileExists = require('file-exists');
 const fs = require('fs');
+const glob = require("glob");
 const path = require('path');
 const prompt = require('prompt-sync')();
 const replacements = require('./replacements');
@@ -15,6 +16,9 @@ module.exports = {
     if (files.length === 0) {
       console.log('ERROR: Not enough arguments specified. Type rename -h for help');
       process.exit(1);
+    }
+    if (files.length === 1) {
+      files = glob.sync(files[0]);
     }
     let fileIndex = 1;
     _.forEach(files, function(value) {

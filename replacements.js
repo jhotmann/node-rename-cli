@@ -33,6 +33,26 @@ const replacements = {
       return fileObj.name.toUpperCase();
     }
   },
+  '{{fc}}': {
+    name: 'File name camel case',
+    description: "The original name of the file in camel case",
+    unique: true,
+    function: function(fileObj) {
+      return fileObj.name.toLowerCase().replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
+        return index === 0 ? letter.toLowerCase() : letter.toUpperCase();
+      }).replace(/[\s\-_\.]+/g, '');
+    }
+  },
+  '{{fp}}': {
+    name: 'File name pascal case',
+    description: "The original name of the file in pascal case",
+    unique: true,
+    function: function(fileObj) {
+      return fileObj.name.toLowerCase().replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter) {
+        return letter.toUpperCase();
+      }).replace(/[\s\-_\.]+/g, '');
+    }
+  },
   '{{p}}': {
     name: 'Parent directory',
     description: "The name of the parent directory",
@@ -68,6 +88,17 @@ const replacements = {
       let d = new Date();
       let day = d.getDate();
       return (day < 10 ? '0' + day : day);
+    }
+  },
+  '{{g}}': {
+    name: 'GUID',
+    description: "A globally unique identifier",
+    unique: true,
+    function: function() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+        return v.toString(16);
+      });
     }
   }
 };
