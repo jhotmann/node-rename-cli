@@ -60,7 +60,8 @@ module.exports = {
   },
   getReplacements: function() {
     _.forEach(replacements, function(value, key) {
-      console.log(' ' + key + '    ' + value.name + ': ' + value.description);
+      let spaces = (14 - key.length > 0 ? 14 - key.length : 1);
+      console.log(' ' + key + ' '.repeat(spaces) + value.name + ': ' + value.description);
     });
   }
 };

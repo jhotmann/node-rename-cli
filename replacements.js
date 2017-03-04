@@ -17,6 +17,22 @@ const replacements = {
       return fileObj.name;
     }
   },
+  '{{fl}}': {
+    name: 'File name lower',
+    description: "The original name of the file in lower case",
+    unique: true,
+    function: function(fileObj) {
+      return fileObj.name.toLowerCase();
+    }
+  },
+  '{{fu}}': {
+    name: 'File name upper',
+    description: "The original name of the file in upper case",
+    unique: true,
+    function: function(fileObj) {
+      return fileObj.name.toUpperCase();
+    }
+  },
   '{{p}}': {
     name: 'Parent directory',
     description: "The name of the parent directory",
