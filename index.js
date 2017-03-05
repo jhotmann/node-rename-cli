@@ -2,9 +2,13 @@ const _ = require('lodash');
 const fileExists = require('file-exists');
 const fs = require('fs');
 const glob = require("glob");
+const os = require('os');
 const path = require('path');
 const prompt = require('prompt-sync')();
-const replacements = require('./replacements');
+const defaultReplacements = require('./replacements');
+const userReplacements = require(os.homedir() + '/.rename/replacements.js');
+
+const replacements = _.merge(defaultReplacements, userReplacements);
 
 module.exports = {
   thecommand: function(args) {
@@ -17,7 +21,7 @@ module.exports = {
       console.log('ERROR: Not enough arguments specified. Type rename -h for help');
       process.exit(1);
     }
-    if (files.length === 1) {
+    if (files.length === 1) { // TODO change this in case people specify multiple wildcard sources
       files = glob.sync(files[0]);
     }
     let fileIndex = 1;
@@ -51,7 +55,7 @@ module.exports = {
         
         // if output file name already exists prompt for overwrite unless --f specified.
         if (!args.f && fileExists.sync(outputFileName)) {
-          var response = prompt(fileObj.newName + fileObj.newNameExt + ' already exists. Would you like to replace it? (y/n) ');
+          let response = prompt(fileObj.newName + fileObj.newNameExt + ' already exists. Would you like to replace it? (y/n) ');
           if (response === 'y') {
             renameFile(originalFileName, outputFileName);
           }
