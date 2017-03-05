@@ -1,6 +1,6 @@
 {
   "name": "rename-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A command line utility for renaming files",
   "main": "index.js",
   "preferGlobal": true,
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall" : "./install.js"
+    "postinstall" : "node install.js"
   },
   "author": "Jordan Hotmann",
   "license": "MIT",
