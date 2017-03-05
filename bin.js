@@ -15,7 +15,7 @@ fs.ensureFile(userReplacements, err => {
   fs.readFile(userReplacements, 'utf8', (er, data) => {
     if (er) throw er;
     if (data === '') {
-      fs.readFile('./userReplacements.js', 'utf8', (ex, usrRep) => {
+      fs.readFile(__dirname + '/userReplacements.js', 'utf8', (ex, usrRep) => {
         if (ex) throw ex;
         fs.writeFile(userReplacements, usrRep, (e) => {
           if (e) throw e;
