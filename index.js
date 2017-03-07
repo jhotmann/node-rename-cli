@@ -8,7 +8,12 @@ const path = require('path');
 const prompt = require('prompt-sync')();
 const defaultReplacements = require('./replacements');
 
-const userReplacements = require(os.homedir() + '/.rename/replacements.js');
+let userReplacements;
+if (fileExists(os.homedir() + '/.rename/replacements.js')) {
+  userReplacements = require(os.homedir() + '/.rename/replacements.js');
+} else {
+  userReplacements = {};
+}
 const undoFile = os.homedir() + '/.rename/undo.json';
 
 const replacements = _.merge(defaultReplacements, userReplacements);
