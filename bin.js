@@ -30,40 +30,18 @@ fs.ensureFile(userReplacements, err => {
 
 function parseArgs() {
   if (argv.help || argv.h) { // display help text
-    console.log('');
-    console.log('Rename a file or multiple files with optional variable replacement.');
-    console.log('');
-    console.log('Usage: %s [options] files new-file-name', commandName);
-    console.log(' If you rename multiple files at once, an index will be appended');
-    console.log(' to the end of the file unless the resulting file name will be');
-    console.log(' unique. Like when using {{f}} or {{g}}.');
-    console.log(' If you do not specify a file extension in the new file name, the');
-    console.log(' original file extension will be used.');
-    console.log('');
-    console.log('Options:');
-    console.log('');
-    console.log(' -h, --help    Display this usage info');
-    console.log(' --f           Force overwrite when output file name already exists');
-    console.log(' --s           Simulate rename and just print new file names');
-    console.log('');
-    console.log('Available Variables:');
-    console.log('');
+    let help1 = fs.readFileSync(__dirname + '/help1.txt', 'utf8');
+    let help2 = fs.readFileSync(__dirname + '/help2.txt', 'utf8');
+    console.log(help1);
     index.getReplacements();
-    console.log('');
-    console.log('Examples:');
-    console.log('');
-    console.log(' rename *.log {{y}}{{m}}{{d}}{{f}}');
-    console.log('   node.log → 20170303node.log');
-    console.log('   system.log → 20170303system.log');
-    console.log('');
-    console.log(' rename *.log test');
-    console.log('   node.log → test1.log');
-    console.log('   system.log → test2.log');
-    console.log('');
-    console.log('   note: index will prepend with zeros to keep file order the same');
-    console.log('   when there are more than 9 files renamed.');
+    console.log(help2);
+    process.exit(0);
+  } else if (argv.v) { // print version number
+    console.log(packagejson.version);
     console.log('');
     process.exit(0);
+  } else if (argv.u) { // undo previous rename
+    index.undoRename();
   } else { // proceed to index.js to do the rename
     index.thecommand(argv);
   }

@@ -1,0 +1,16 @@
+
+Usage: rename [options] files new-file-name
+ If you do not specify a file extension in the new file name, the
+ original file extension will be used.
+
+Options:
+
+ -h            Display this usage info
+ -v            Display rename version
+ -u            Undo previous rename operation
+ --r="RegEx"   See RegEx section for more information
+ --f           Force overwrite without prompt when output file name already exists
+ --s           Simulate rename and just print new file names
+ --noindex     Do not append an index when renaming multiple files. Use with caution.
+
+Available Variables:

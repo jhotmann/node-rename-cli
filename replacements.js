@@ -53,6 +53,18 @@ const replacements = {
       }).replace(/[\s\-_\.]+/g, '');
     }
   },
+  '{{r}}': {
+    name: 'RegEx',
+    description: 'The match of the RegEx pattern specified in --r="..."',
+    unique: false,
+    function: function(fileObj) {
+      if (fileObj.regexMatch) {
+        return fileObj.regexMatch[0];
+      } else {
+        return '';
+      }
+    }
+  },
   '{{p}}': {
     name: 'Parent directory',
     description: "The name of the parent directory",
