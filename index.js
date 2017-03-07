@@ -9,7 +9,7 @@ const prompt = require('prompt-sync')();
 const defaultReplacements = require('./replacements');
 
 let userReplacements;
-if (fileExists(os.homedir() + '/.rename/replacements.js')) {
+if (fileExists.sync(os.homedir() + '/.rename/replacements.js')) {
   userReplacements = require(os.homedir() + '/.rename/replacements.js');
 } else {
   userReplacements = {};
