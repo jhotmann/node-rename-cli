@@ -6,7 +6,7 @@ const namedRegexp = require("named-js-regexp");
 const os = require('os');
 const path = require('path');
 const prompt = require('prompt-sync')();
-const defaultReplacements = require('./replacements');
+const defaultReplacements = require('./lib/replacements');
 
 let userReplacements;
 if (fileExists.sync(os.homedir() + '/.rename/replacements.js')) {
@@ -111,10 +111,12 @@ module.exports = {
     }
   },
   getReplacements: function() { // GET LIST OF REPLACEMENT VARIABLES
+    let returnText = '';
     _.forEach(replacements, function(value, key) {
       let spaces = (14 - key.length > 0 ? 14 - key.length : 1);
-      console.log(' ' + key + ' '.repeat(spaces) + value.name + ': ' + value.description);
+      returnText += ' ' + key + ' '.repeat(spaces) + value.name + ': ' + value.description + '\n';
     });
+    return returnText;
   },
   undoRename: function() { // UNDO PREVIOUS RENAME
     let operations = [];

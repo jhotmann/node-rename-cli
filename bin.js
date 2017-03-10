@@ -15,7 +15,7 @@ fs.ensureFile(userReplacements, err => {
   fs.readFile(userReplacements, 'utf8', (er, data) => {
     if (er) throw er;
     if (data === '') {
-      fs.readFile(__dirname + '/userReplacements.js', 'utf8', (ex, usrRep) => {
+      fs.readFile(__dirname + '/lib/userReplacements.js', 'utf8', (ex, usrRep) => {
         if (ex) throw ex;
         fs.writeFile(userReplacements, usrRep, (e) => {
           if (e) throw e;
@@ -30,11 +30,9 @@ fs.ensureFile(userReplacements, err => {
 
 function parseArgs() {
   if (argv.help || argv.h) { // display help text
-    let help1 = fs.readFileSync(__dirname + '/help1.txt', 'utf8');
-    let help2 = fs.readFileSync(__dirname + '/help2.txt', 'utf8');
-    console.log(help1);
-    index.getReplacements();
-    console.log(help2);
+    let help = fs.readFileSync(__dirname + '/lib/help.txt', 'utf8');
+    help = help.replace('[[replacements]]', index.getReplacements());
+    console.log(help);
     process.exit(0);
   } else if (argv.v) { // print version number
     console.log(packagejson.version);

@@ -37,11 +37,17 @@ Available Variables:
  {{m}}         Month: The current month
  {{d}}         Day: The current day
  {{g}}         GUID: A globally unique identifier
+ {{eiso}}      Exif ISO: Photo ISO value
+ {{efnum}}     Exif FNumber: Photo FNumber value
+ {{eex}}       Exif Exposure Time: Photo exposure time value
+ {{ey}}        Exif Year: Year the photo was taken
+ {{em}}        Exif Month: Month the photo was taken
+ {{ed}}        Exif Day: Day the photo was taken
 
 RegEx:
 
  When you specify a RegEx pattern with the --r option, the regular
- express will be run against the original file name and the first
+ expression will be run against the original file name and the first
  match will be used to replace {{r}} in the output file name. If the
  regular expression fails to match, and empty string will be returned.
  DO NOT include the forward slashes in your RegEx pattern.
@@ -70,6 +76,11 @@ Examples:
    ExpenseReport - August 2016.pdf → 2016 - August Expense Report.pdf
    ExpenseReport - March 2015.pdf → 2015 - March Expense Report.pdf
    ExpenseReport - October 2015.pdf → 2015 - October Expense Report.pdf
+
+ rename *.jpg "{{ey}}{{em}}{{ed}}-NewYorkCity{{i}}-ISO{{eiso}}-f{{efnum}}-{{eex}}s"
+   DSC_5621.jpg → 20150927-NewYorkCity1-ISO250-f5.6-10s.jpg
+   DSC_5633.jpg → 20150928-NewYorkCity2-ISO125-f7.1-1/400s.jpg
+   DSC_5889.jpg → 20150930-NewYorkCity3-ISO125-f4.5-1/200s.jpg
 ```
 
 ## Installation
@@ -77,7 +88,7 @@ Examples:
 1. Type `npm install -g rename-cli` into your terminal or command window
 
 ## Adding custom replacement variables
-Whenever you run rename for the first time a file ```~/.rename/replacements.js``` is created. You can edit this file and add your own replacement variables **and override** the default replacements. The user replacements.js file contains a decent amount of documentation in it and you can check out the default [replacements.js](replacements.js) file for more examples. If you come up with some handy replacements, feel free to submit them to be included in the defaults with a pull request or submit it as an issue.
+Whenever you run rename for the first time a file ```~/.rename/replacements.js``` is created. You can edit this file and add your own replacement variables **and override** the default replacements. The user replacements.js file contains a decent amount of documentation in it and you can check out the default [replacements.js](lib/replacements.js) file for more examples. If you come up with some handy replacements, feel free to submit them to be included in the defaults with a pull request or submit it as an issue.
 
 ## Libraries Used
 - Minimist https://github.com/substack/minimist
@@ -87,3 +98,5 @@ Whenever you run rename for the first time a file ```~/.rename/replacements.js``
 - prompt-sync https://github.com/0x00A/prompt-sync
 - lodash https://lodash.com/
 - named-js-regexp https://github.com/edvinv/named-js-regexp
+- num2fraction https://github.com/yisibl/num2fraction
+- jpeg-exif https://github.com/zhso/jpeg-exif
