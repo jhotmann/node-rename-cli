@@ -42,7 +42,8 @@ module.exports = {
       let fileObj = path.parse(fullPath);
       fileObj.newName = newFileName.name;
       fileObj.newNameExt = (newFileName.ext ? newFileName.ext : fileObj.ext);
-      fileObj.index = fileIndexString(files.length, fileIndex);
+      fileObj.index = fileIndex;
+      fileObj.totalFiles = files.length;
 
       // REGEX match and group replacement
       if (args.r) {
@@ -71,16 +72,25 @@ module.exports = {
       }
       
       // REPLACEMENT VARIABLES replace the replacement strings with their value
-      _.forEach(replacements, function(value, key) {
-        if (fileObj.newName.indexOf(key) > -1 && value.unique) {
-          uniqueName = true;
+      let repSearch = /\{{2}([\w]+?)\}{2}|\{{2}([\w]+?)\|(.+?)\}{2}/;
+      let repResult = repSearch.exec(fileObj.newName);
+      while (repResult !== null) {
+        let repVar = repResult[1] || repResult[2];
+        if (replacements[repVar]) {
+          let repObj = replacements[repVar];
+          let defaultArg = (repObj.parameters && repObj.parameters.default ? repObj.parameters.default : '');
+          let repArg = (repResult[3] ? repResult[3] : defaultArg);
+          fileObj.newName = fileObj.newName.replace(repResult[0], repObj.function(fileObj, repArg));
+          if (repObj.unique) {
+            uniqueName = true;
+          }
+          repResult = repSearch.exec(fileObj.newName);
         }
-        fileObj.newName = fileObj.newName.replace(key, value.function(fileObj));
-      });
+      }
 
       // APPEND INDEX if output file names are not unique
       if (!uniqueName && !args.noindex) {
-        fileObj.newName = fileObj.newName + fileObj.index;
+        fileObj.newName = fileObj.newName + replacements.i.function(fileObj, '1');
       }
 
       // SIMULATED if argument --s just print what the output would be
@@ -111,10 +121,14 @@ module.exports = {
     }
   },
   getReplacements: function() { // GET LIST OF REPLACEMENT VARIABLES
+    let descIndex = 16;
     let returnText = '';
     _.forEach(replacements, function(value, key) {
-      let spaces = (16 - key.length > 0 ? 16 - key.length : 1);
-      returnText += ' ' + key + ' '.repeat(spaces) + value.name + ': ' + value.description + '\n';
+      let spaces = (descIndex - key.length - 4 > 0 ? descIndex - key.length - 4 : 1);
+      returnText += ' {{' + key + '}}' + ' '.repeat(spaces) + value.name + ': ' + value.description + '\n';
+      if (value.parameters) {
+        returnText += ' '.repeat(descIndex + 3) + 'Parameters: ' + value.parameters.description + '\n';
+      }
     });
     return returnText;
   },
@@ -144,13 +158,4 @@ function writeUndoFile(operations) {
   fs.writeJSON(undoFile, operations, (err) => {
     if (err) throw err;
   });
-}
-
-function fileIndexString(total, index) { // append correct number of zeroes depending on total number of files
-  let totString = '' + total;
-  let returnString = '' + index;
-  while (returnString.length < totString.length) {
-    returnString = '0' + returnString;
-  }
-  return returnString;
 }
