@@ -113,7 +113,7 @@ module.exports = {
   getReplacements: function() { // GET LIST OF REPLACEMENT VARIABLES
     let returnText = '';
     _.forEach(replacements, function(value, key) {
-      let spaces = (14 - key.length > 0 ? 14 - key.length : 1);
+      let spaces = (16 - key.length > 0 ? 16 - key.length : 1);
       returnText += ' ' + key + ' '.repeat(spaces) + value.name + ': ' + value.description + '\n';
     });
     return returnText;

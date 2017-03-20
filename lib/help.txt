@@ -5,13 +5,13 @@ Usage: rename [options] files new-file-name
 
 Options:
 
- -h            Display this usage info
- -v            Display rename version
- -u            Undo previous rename operation
- --r="RegEx"   See RegEx section for more information
- --f           Force overwrite without prompt when output file name already exists
- --s           Simulate rename and just print new file names
- --noindex     Do not append an index when renaming multiple files. Use with caution.
+ -h, --help      Display this usage info
+ -v, --version   Display rename version
+ -u, --undo      Undo previous rename operation
+ -r "RegEx"      See RegEx section for more information
+ -f, --force     Force overwrite without prompt when output file name already exists
+ -s, --sim       Simulate rename and just print new file names
+ -n, --noindex   Do not append an index when renaming multiple files. Use with caution.
 
 Available Variables:
 
@@ -44,7 +44,7 @@ Examples:
    note: the file index will prepend with zero(s) to keep file order
    the same when there are more than 9 files renamed.
 
- rename --r="- (?<month>[A-Za-z]+) (?<year>\d{4})" --noindex ExpenseReport*.pdf "{{year}} - {{month}} Expense Report"
+ rename -r "- (?<month>[A-Za-z]+) (?<year>\d{4})" --noindex ExpenseReport*.pdf "{{year}} - {{month}} Expense Report"
    ExpenseReport - August 2016.pdf → 2016 - August Expense Report.pdf
    ExpenseReport - March 2015.pdf → 2015 - March Expense Report.pdf
    ExpenseReport - October 2015.pdf → 2015 - October Expense Report.pdf

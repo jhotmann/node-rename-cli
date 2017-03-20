@@ -15,34 +15,34 @@ Usage: rename [options] files new-file-name
 
 Options:
 
- -h            Display this usage info
- -v            Display rename version
- -u            Undo previous rename operation
- --r="RegEx"   See RegEx section for more information
- --f           Force overwrite without prompt when output file name already exists
- --s           Simulate rename and just print new file names
- --noindex     Do not append an index when renaming multiple files. Use with caution.
+ -h, --help      Display this usage info
+ -v, --version   Display rename version
+ -u, --undo      Undo previous rename operation
+ -r "RegEx"      See RegEx section for more information
+ -f, --force     Force overwrite without prompt when output file name already exists
+ -s, --sim       Simulate rename and just print new file names
+ -n, --noindex   Do not append an index when renaming multiple files. Use with caution.
 
 Available Variables:
 
- {{i}}         Index: The index of the file when renaming multiple files
- {{f}}         File name: The original name of the file
- {{fl}}        File name lower: The original name of the file in lower case
- {{fu}}        File name upper: The original name of the file in upper case
- {{fc}}        File name camel case: The original name of the file in camel case
- {{fp}}        File name pascal case: The original name of the file in pascal case
- {{r}}         RegEx: The match of the RegEx pattern specified in --r="..."
- {{p}}         Parent directory: The name of the parent directory
- {{y}}         Year: The current year
- {{m}}         Month: The current month
- {{d}}         Day: The current day
- {{g}}         GUID: A globally unique identifier
- {{eiso}}      Exif ISO: Photo ISO value
- {{efnum}}     Exif FNumber: Photo FNumber value
- {{eex}}       Exif Exposure Time: Photo exposure time value
- {{ey}}        Exif Year: Year the photo was taken
- {{em}}        Exif Month: Month the photo was taken
- {{ed}}        Exif Day: Day the photo was taken
+ {{i}}           Index: The index of the file when renaming multiple files
+ {{f}}           File name: The original name of the file
+ {{fl}}          File name lower: The original name of the file in lower case
+ {{fu}}          File name upper: The original name of the file in upper case
+ {{fc}}          File name camel case: The original name of the file in camel case
+ {{fp}}          File name pascal case: The original name of the file in pascal case
+ {{r}}           RegEx: The match of the RegEx pattern specified in --r="..."
+ {{p}}           Parent directory: The name of the parent directory
+ {{y}}           Year: The current year
+ {{m}}           Month: The current month
+ {{d}}           Day: The current day
+ {{g}}           GUID: A globally unique identifier
+ {{eiso}}        Exif ISO: Photo ISO value
+ {{efnum}}       Exif FNumber: Photo FNumber value
+ {{eex}}         Exif Exposure Time: Photo exposure time value
+ {{ey}}          Exif Year: Year the photo was taken
+ {{em}}          Exif Month: Month the photo was taken
+ {{ed}}          Exif Day: Day the photo was taken
 
 RegEx:
 
@@ -72,7 +72,7 @@ Examples:
    note: the file index will prepend with zero(s) to keep file order
    the same when there are more than 9 files renamed.
 
- rename --r="- (?<month>[A-Za-z]+) (?<year>\d{4})" --noindex ExpenseReport*.pdf "{{year}} - {{month}} Expense Report"
+ rename -r "- (?<month>[A-Za-z]+) (?<year>\d{4})" --noindex ExpenseReport*.pdf "{{year}} - {{month}} Expense Report"
    ExpenseReport - August 2016.pdf → 2016 - August Expense Report.pdf
    ExpenseReport - March 2015.pdf → 2015 - March Expense Report.pdf
    ExpenseReport - October 2015.pdf → 2015 - October Expense Report.pdf
@@ -91,7 +91,7 @@ Examples:
 Whenever you run rename for the first time a file ```~/.rename/replacements.js``` is created. You can edit this file and add your own replacement variables **and override** the default replacements. The user replacements.js file contains a decent amount of documentation in it and you can check out the default [replacements.js](lib/replacements.js) file for more examples. If you come up with some handy replacements, feel free to submit them to be included in the defaults with a pull request or submit it as an issue.
 
 ## Libraries Used
-- Minimist https://github.com/substack/minimist
+- yargs https://github.com/yargs/yargs
 - glob https://github.com/isaacs/node-glob
 - fs-extra https://github.com/jprichardson/node-fs-extra
 - file-exists https://github.com/scottcorgan/file-exists

@@ -1,12 +1,19 @@
 #!/usr/bin/env node
-const argv = require('minimist')(process.argv.slice(2), {boolean: true});
+const argv = require('yargs')
+    .boolean(['h', 'v', 'u', 'f', 's', 'n'])
+    .alias('h', 'help')
+    .alias('v', 'version')
+    .alias('u', 'undo')
+    .alias('f', 'force')
+    .alias('s', 'sim')
+    .alias('n', 'noindex')
+    .argv;
 const fs = require('fs-extra');
 const index = require('./index');
 const os = require('os');
 const packagejson = require('./package.json');
 
 const userReplacements = os.homedir() + '/.rename/replacements.js';
-const commandName = Object.keys(packagejson.bin)[0];
 
 // check if ~/.rename/replacements.js exists, if not create it and
 // then copy in the text from ./userReplacements.js
@@ -29,7 +36,7 @@ fs.ensureFile(userReplacements, err => {
 });
 
 function parseArgs() {
-  if (argv.help || argv.h) { // display help text
+  if (argv.h) { // display help text
     let help = fs.readFileSync(__dirname + '/lib/help.txt', 'utf8');
     help = help.replace('[[replacements]]', index.getReplacements());
     console.log(help);
