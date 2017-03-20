@@ -31,7 +31,7 @@ Available Variables:
  {{fu}}          File name upper: The original name of the file in upper case
  {{fc}}          File name camel case: The original name of the file in camel case
  {{fp}}          File name pascal case: The original name of the file in pascal case
- {{r}}           RegEx: The match of the RegEx pattern specified in --r="..."
+ {{r}}           RegEx: The match of the RegEx pattern specified in -r "..."
  {{p}}           Parent directory: The name of the parent directory
  {{y}}           Year: The current year
  {{m}}           Month: The current month
@@ -46,7 +46,7 @@ Available Variables:
 
 RegEx:
 
- When you specify a RegEx pattern with the --r option, the regular
+ When you specify a RegEx pattern with the -r option, the regular
  expression will be run against the original file name and the first
  match will be used to replace {{r}} in the output file name. If the
  regular expression fails to match, and empty string will be returned.
@@ -56,7 +56,7 @@ RegEx:
  You can write RegEx to capture one or more named groups and then
  use those groups in your output file name. If the RegEx groups do
  not return a match, the replacement variables in the output file
- name will be blank, so be sure to test with the --s option. See
+ name will be blank, so be sure to test with the -s option. See
  the third example below for how to use RegEx groups.
 
 Examples:

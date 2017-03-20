@@ -18,7 +18,7 @@ Available Variables:
 [[replacements]]
 RegEx:
 
- When you specify a RegEx pattern with the --r option, the regular
+ When you specify a RegEx pattern with the -r option, the regular
  expression will be run against the original file name and the first
  match will be used to replace {{r}} in the output file name. If the
  regular expression fails to match, and empty string will be returned.
@@ -28,7 +28,7 @@ RegEx:
  You can write RegEx to capture one or more named groups and then
  use those groups in your output file name. If the RegEx groups do
  not return a match, the replacement variables in the output file
- name will be blank, so be sure to test with the --s option. See
+ name will be blank, so be sure to test with the -s option. See
  the third example below for how to use RegEx groups.
 
 Examples:
