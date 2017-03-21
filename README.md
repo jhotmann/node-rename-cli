@@ -3,14 +3,17 @@ A tool for renaming files quickly, especially multiple files at once.
 
 ## Features
 - Glob file matching
+- Undo previous rename
 - Variable replacement in output file name
 - Ability to add your own variables
 - Auto-indexing when renaming multiple files
-- RegEx support
+- RegEx support for using part(s) of original file name
 - Exif data support
 
 ## Usage
 ```rename [options] files new-file-name```
+
+The new file name does not need to contain a file extension. If you do not specifiy a file extension the original file extension will be preserved. *Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension.*
 
 ### Options
  ```-i```, ```--info```: View online help 
@@ -23,24 +26,27 @@ A tool for renaming files quickly, especially multiple files at once.
  ```-h```, ```--help```: Show help
 
 ### Variables
- ```{{i}}``` Index: The index of the file when renaming multiple files. Parameters: starting index, default is 1.    
- ```{{f}}``` File name: The original name of the file. Parameters: upper, lower, camel, pascal, or blank for unmodified.    
- ```{{r}}``` RegEx: The match of the RegEx pattern specified in -r "..."    
- ```{{p}}``` Parent directory: The name of the parent directory    
- ```{{d}}``` Date: The current date/time. Parameters: date format, default is yyyymmdd.    
- ```{{g}}``` GUID: A globally unique identifier    
- ```{{eiso}}``` Exif ISO: Photo ISO value    
- ```{{efnum}}``` Exif FNumber: Photo FNumber value    
- ```{{eex}}``` Exif Exposure Time: Photo exposure time value    
- ```{{ed}}``` Exif Date: The date/time photo was taken. Parameters: date format, default is yyyymmdd.    
+The new file name can contain any number of variables that will be replaced with their value. Some variables can take parameters and will be indicated in their description. To pass a parameter to a variable, just use the variable name followed by a pipe and the parameter. The output file name must be surrounded by quotes when using parameters. See the first example below for how to use parameters.    
 
-To pass a parameter to a variable, just use the variable name followed by a pipe and the parameter. The output file name must be surrounded by quotes when using parameters. See the first example below for how to use parameters.
+ ```{{i}}``` Index: The index of the file when renaming multiple files. Parameters: starting index, default is 1.    
+ ```{{f}}``` File name: The original name of the file. Parameters: upper, lower, camel, pascal, or none for unmodified.    
+ ```{{r}}``` RegEx: The match of the RegEx pattern specified in -r "...".    
+ ```{{p}}``` Parent directory: The name of the parent directory. Parameters: upper, lower, camel, pascal, or none for unmodified.    
+ ```{{d}}``` Date: The current date/time. Parameters: date format, default is yyyymmdd.    
+ ```{{cd}}``` Create date: The date/time the file was created. Parameters: date format, default is yyyymmdd.    
+ ```{{md}}``` Modified date: The date/time the file was modified. Parameters: date format, default is yyyymmdd.    
+ ```{{ad}}``` Accessed date: The date/time the file was accessed. Parameters: date format, default is yyyymmdd.    
+ ```{{g}}``` GUID: A globally unique identifier.    
+ ```{{eiso}}``` Exif ISO: Photo ISO value.    
+ ```{{efnum}}``` Exif FNumber: Photo FNumber value.    
+ ```{{eex}}``` Exif Exposure Time: Photo exposure time value.    
+ ```{{ed}}``` Exif Date: The date/time photo was taken. Parameters: date format, default is yyyymmdd.    
 
 ### RegEx
 When you specify a RegEx pattern with the -r option, the regular expression will be run against the original file name and the first match will be used to replace {{r}} in the output file name. If the regular expression fails to match, and empty string will be returned. **DO NOT** include the forward slashes in your RegEx pattern.
 
  Groups:    
- You can write RegEx to capture one or more named groups and then use those groups in your output file name. If the RegEx groups do not return a match, the replacement variables in the output file name will be blank, so be sure to test with the -s option. See the third example below for how to use RegEx groups.
+ You can write RegEx to capture one or more named groups and then use those groups in your output file name. The groups should be written like: ```(?<GroupName>regular expression here)```. If the RegEx groups do not return a match, the replacement variables in the output file name will be blank, so be sure to test with the -s option. See the third example below for how to use RegEx groups.
 
 ### Examples
 

@@ -30,7 +30,7 @@ const argv = require('yargs')
       }, 'n': {
         alias: 'noindex',
         boolean: true,
-        describe: 'Do not append an index when renaming multiple files. Use with caution.'
+        describe: 'Do not append an index when renaming multiple files'
       }
     })
     .help('help')
