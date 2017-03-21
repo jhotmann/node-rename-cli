@@ -13,6 +13,8 @@ A cross-platform tool for renaming files quickly, especially multiple files at o
 ## Usage
 ```rename [options] files new-file-name```
 
+*Note: Windows users (or anyone who wants to type one less letter) can use rname instead of rename since the rename command already exists in Windows*
+
 The new file name does not need to contain a file extension. If you do not specifiy a file extension the original file extension will be preserved. *Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension.*
 
 ### Options

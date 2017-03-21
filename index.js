@@ -49,7 +49,7 @@ module.exports = {
       if (args.r) {
         let pattern;
         try {
-          pattern = new RegExp(args.r);
+          pattern = new RegExp(args.r.replace(/\(\?\<\w+\>/g, '('));
         } catch (err) {
           console.log(err.message);
           process.exit(1);
