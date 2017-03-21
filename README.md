@@ -1,5 +1,5 @@
 # Rename-CLI
-A tool for renaming files quickly, especially multiple files at once.
+A cross-platform tool for renaming files quickly, especially multiple files at once.
 
 ## Features
 - Glob file matching
@@ -57,6 +57,7 @@ rename *.log "{{d|yyyymmdd}}{{f}}"
   node.log → 20170303node.log
   system.log → 20170303system.log
 ```
+##### *Note: the default format for the date variable is yyyymmdd so in the above example you could just write ```rename *.log {{d}}{{f}}``` to achieve the same result.*
 
 Rename all files the same and an index will be appended. The index will include the correct number of zeroes to keep file order the same.
 
