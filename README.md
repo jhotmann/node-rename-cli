@@ -2,25 +2,40 @@
 A tool for renaming files quickly, especially multiple files at once.
 
 ## Features
-- Wildcard file matching
+- Glob file matching
 - Variable replacement in output file name
 - Ability to add your own variables
 - Auto-indexing when renaming multiple files
 - RegEx support
+- Exif data support
 
 ## Usage
 ```rename [options] files new-file-name```
 
 ### Options
- ```-h```, ```--help```: Display help info    
- ```-v```, ```--version```: Display rename version    
+ ```-i```, ```--info```: View online help 
+ ```-v```, ```--variables```: Display available variables    
  ```-u```, ```--undo```: Undo previous rename operation    
  ```-r "RegEx"```: See [RegEx](#regex) section for more information    
  ```-f```, ```--force```: Force overwrite without prompt when output file name already exists    
  ```-s```, ```--sim```: Simulate rename and just print new file names    
  ```-n```, ```--noindex```: Do not append an index when renaming multiple files. Use with caution.    
+ ```-h```, ```--help```: Show help
 
 ### Variables
+ ```{{i}}``` Index: The index of the file when renaming multiple files. Parameters: starting index, default is 1.    
+ ```{{f}}``` File name: The original name of the file. Parameters: upper, lower, camel, pascal, or blank for unmodified.    
+ ```{{r}}``` RegEx: The match of the RegEx pattern specified in -r "..."    
+ ```{{p}}``` Parent directory: The name of the parent directory    
+ ```{{d}}``` Date: The current date/time. Parameters: date format, default is yyyymmdd.    
+ ```{{g}}``` GUID: A globally unique identifier    
+ ```{{eiso}}``` Exif ISO: Photo ISO value    
+ ```{{efnum}}``` Exif FNumber: Photo FNumber value    
+ ```{{eex}}``` Exif Exposure Time: Photo exposure time value    
+ ```{{ed}}``` Exif Date: The date/time photo was taken. Parameters: date format, default is yyyymmdd.    
+
+To pass a parameter to a variable, just use the variable name followed by a pipe and the parameter. The output file name must be surrounded by quotes when using parameters. See the first example below for how to use parameters.
+
 ### RegEx
 When you specify a RegEx pattern with the -r option, the regular expression will be run against the original file name and the first match will be used to replace {{r}} in the output file name. If the regular expression fails to match, and empty string will be returned. **DO NOT** include the forward slashes in your RegEx pattern.
 
@@ -29,10 +44,10 @@ When you specify a RegEx pattern with the -r option, the regular expression will
 
 ### Examples
 
-Prepend date to file name
+Prepend date to file name. Date formatting options can be found [here](https://github.com/felixge/node-dateformat#mask-options).
 
 ```sh
-rename *.log "{{d|yymmdd}}{{f}}"
+rename *.log "{{d|yyyymmdd}}{{f}}"
   node.log → 20170303node.log
   system.log → 20170303system.log
 ```
@@ -68,7 +83,7 @@ rename *.jpg "{{ey}}{{em}}{{ed}}-NewYorkCity{{i}}-ISO{{eiso}}-f{{efnum}}-{{eex}}
 1. Type `npm install -g rename-cli` into your terminal or command window
 
 ## Adding custom replacement variables
-Whenever you run rename for the first time a file ```~/.rename/replacements.js``` is created. You can edit this file and add your own replacement variables **and override** the default replacements. The user replacements.js file contains a decent amount of documentation in it and you can check out the default [replacements.js](lib/replacements.js) file for more examples. If you come up with some handy replacements, feel free to submit them to be included in the defaults with a pull request or submit it as an issue.
+Whenever you run rename for the first time a file ```~/.rename/replacements.js``` or ```C:\Users\[username]\.rename\replacements.js``` is created. You can edit this file and add your own replacement variables **and override** the default replacements if desired. The user replacements.js file contains a decent amount of documentation in it and you can check out the default [replacements.js](lib/replacements.js) file for more examples. If you come up with some handy replacements, feel free to submit them to be included in the defaults with a pull request or submit it as an issue.
 
 ## Libraries Used
 - yargs https://github.com/yargs/yargs
@@ -81,3 +96,4 @@ Whenever you run rename for the first time a file ```~/.rename/replacements.js``
 - named-js-regexp https://github.com/edvinv/named-js-regexp
 - num2fraction https://github.com/yisibl/num2fraction
 - jpeg-exif https://github.com/zhso/jpeg-exif
+- opn https://github.com/sindresorhus/opn
