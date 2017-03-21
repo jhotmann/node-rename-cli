@@ -70,7 +70,9 @@ function parseArgs() {
     process.exit(0);
   } else if (argv.i) {
     opn('https://github.com/jhotmann/node-rename-cli');
-    process.exit(0);
+    if (process.platform !== 'win32') {
+      process.exit(0);
+    }
   } else if (argv.u) { // undo previous rename
     index.undoRename();
   } else { // proceed to index.js to do the rename
