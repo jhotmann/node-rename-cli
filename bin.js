@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const argv = require('yargs')
-    .usage('rename [options] files new-file-name')
+    .usage('Rename-CLI v' + require('./package.json').version + '\n\nUsage:\n\n  rename [options] files new-file-name')
     .options({
       'h': {
         alias: 'help'
