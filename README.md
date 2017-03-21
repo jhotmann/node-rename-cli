@@ -59,7 +59,7 @@ rename *.log "{{d|yyyymmdd}}{{f}}"
 ```
 ##### *Note: the default format for the date variable is yyyymmdd so in the above example you could just write ```rename *.log {{d}}{{f}}``` to achieve the same result.*
 
-Rename all files the same and an index will be appended. The index will include the correct number of zeroes to keep file order the same.
+Rename all files the same and an index will be appended. The index will be prepended the correct number of zeroes to keep file order the same. For example if you are renaming 150 files, the first index will be 001. You can change the starting index by adding the index variable with a parameter ```{{i|42}}``` If you don't want to include indexes use the ```-n``` option. You will be prompted for any file conflicts.
 
 ```sh
 rename *.log test
