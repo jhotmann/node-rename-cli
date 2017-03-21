@@ -18,7 +18,7 @@ A cross-platform tool for renaming files quickly, especially multiple files at o
 The new file name does not need to contain a file extension. If you do not specifiy a file extension the original file extension will be preserved. *Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension.*
 
 ### Options
- ```-i```, ```--info```: View online help 
+ ```-i```, ```--info```: View online help    
  ```-v```, ```--variables```: Display available variables    
  ```-u```, ```--undo```: Undo previous rename operation    
  ```-r "RegEx"```: See [RegEx](#regex) section for more information    
