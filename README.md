@@ -48,7 +48,7 @@ When you specify a RegEx pattern with the -r option, the regular expression will
  Groups:    
  You can write RegEx to capture one or more named groups and then use those groups in your output file name. The groups should be written like: ```(?<GroupName>regular expression here)```. If the RegEx groups do not return a match, the replacement variables in the output file name will be blank, so be sure to test with the -s option. See the third example below for how to use RegEx groups.
 
-### Examples
+## Examples
 
 Prepend date to file name. Date formatting options can be found [here](https://github.com/felixge/node-dateformat#mask-options).
 
@@ -87,7 +87,7 @@ rename *.jpg "{{ed}}-NewYorkCity{{i}}-ISO{{eiso}}-f{{efnum}}-{{eex}}s"
 
 ## Installation
 1. Install NodeJS if you haven't already https://nodejs.org
-1. Type `npm install -g rename-cli` into your terminal or command window
+1. Type `npm install -g rename-cli` into your terminal or command window.
 
 ## Adding custom replacement variables
 Whenever you run rename for the first time a file ```~/.rename/replacements.js``` or ```C:\Users\[username]\.rename\replacements.js``` is created. You can edit this file and add your own replacement variables **and override** the default replacements if desired. The user replacements.js file contains a decent amount of documentation in it and you can check out the default [replacements.js](lib/replacements.js) file for more examples. If you come up with some handy replacements, feel free to submit them to be included in the defaults with a pull request or submit it as an issue.
