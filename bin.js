@@ -1,15 +1,43 @@
 #!/usr/bin/env node
 const argv = require('yargs')
-    .boolean(['h', 'v', 'u', 'f', 's', 'n'])
-    .alias('h', 'help')
-    .alias('v', 'version')
-    .alias('u', 'undo')
-    .alias('f', 'force')
-    .alias('s', 'sim')
-    .alias('n', 'noindex')
+    .usage('rename [options] files new-file-name')
+    .options({
+      'h': {
+        alias: 'help'
+      }, 'i': {
+        alias: 'info',
+        boolean: true,
+        describe: 'View online help'
+      }, 'v': {
+        alias: 'variables',
+        boolean: true,
+        describe: 'Display available variables'
+      }, 'u': {
+        alias: 'undo',
+        boolean: true,
+        describe: 'Undo previous rename operation'
+      }, 'r': {
+        describe: 'See RegEx section of online help for more information',
+        type: 'string'
+      }, 'f': {
+        alias: 'force',
+        boolean: true,
+        describe: 'Force overwrite without prompt when output file name already exists'
+      }, 's': {
+        alias: 'sim',
+        boolean: true,
+        describe: 'Simulate rename and just print new file names'
+      }, 'n': {
+        alias: 'noindex',
+        boolean: true,
+        describe: 'Do not append an index when renaming multiple files. Use with caution.'
+      }
+    })
+    .help('help')
     .argv;
 const fs = require('fs-extra');
 const index = require('./index');
+const opn = require('opn');
 const os = require('os');
 const packagejson = require('./package.json');
 
@@ -36,14 +64,13 @@ fs.ensureFile(userReplacements, err => {
 });
 
 function parseArgs() {
-  if (argv.h) { // display help text
-    let help = fs.readFileSync(__dirname + '/lib/help.txt', 'utf8');
-    help = help.replace('[[replacements]]', index.getReplacements());
-    console.log(help);
-    process.exit(0);
-  } else if (argv.v) { // print version number
-    console.log(packagejson.version);
+  if (argv.v) { // print variables
+    console.log('Variables:');
     console.log('');
+    console.log(index.getReplacements());
+    process.exit(0);
+  } else if (argv.i) {
+    opn('https://github.com/jhotmann/node-rename-cli');
     process.exit(0);
   } else if (argv.u) { // undo previous rename
     index.undoRename();

@@ -26,6 +26,7 @@
     "lodash": "^4.17.4",
     "named-js-regexp": "^1.3.2",
     "num2fraction": "^1.2.2",
+    "opn": "^4.0.2",
     "prompt-sync": "^4.1.4",
     "yargs": "^7.0.2"
   }
