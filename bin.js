@@ -39,7 +39,6 @@ const fs = require('fs-extra');
 const index = require('./index');
 const opn = require('opn');
 const os = require('os');
-const packagejson = require('./package.json');
 
 const userReplacements = os.homedir() + '/.rename/replacements.js';
 
