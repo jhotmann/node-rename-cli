@@ -79,7 +79,7 @@ rename -r "- (?<month>[A-Za-z]+) (?<year>\d{4})" --noindex ExpenseReport*.pdf "{
 Extract Exif data from jpg images.
 
 ```sh
-rename *.jpg "{{ey}}{{em}}{{ed}}-NewYorkCity{{i}}-ISO{{eiso}}-f{{efnum}}-{{eex}}s"
+rename *.jpg "{{ed}}-NewYorkCity{{i}}-ISO{{eiso}}-f{{efnum}}-{{eex}}s"
    DSC_5621.jpg → 20150927-NewYorkCity1-ISO250-f5.6-10s.jpg
    DSC_5633.jpg → 20150928-NewYorkCity2-ISO125-f7.1-1/400s.jpg
    DSC_5889.jpg → 20150930-NewYorkCity3-ISO125-f4.5-1/200s.jpg
