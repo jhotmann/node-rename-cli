@@ -32,7 +32,8 @@ The new file name can contain any number of variables that will be replaced with
 
  ```{{i}}``` Index: The index of the file when renaming multiple files. Parameters: starting index, default is 1.    
  ```{{f}}``` File name: The original name of the file. Parameters: upper, lower, camel, pascal, or none for unmodified.    
- ```{{r}}``` RegEx: The match of the RegEx pattern specified in -r "...".    
+ ```{{r}}``` RegEx First: The first match of the RegEx pattern specified in -r "...".    
+ ```{{ra}}``` RegEx All: All matches of the RegEx pattern specified in -r "...". Parameters: separator character(s), default is none.    
  ```{{p}}``` Parent directory: The name of the parent directory. Parameters: upper, lower, camel, pascal, or none for unmodified.    
  ```{{d}}``` Date: The current date/time. Parameters: date format, default is yyyymmdd.    
  ```{{cd}}``` Create date: The date/time the file was created. Parameters: date format, default is yyyymmdd.    
