@@ -28,7 +28,7 @@ The new file name does not need to contain a file extension. If you do not speci
  ```-h```, ```--help```: Show help
 
 ### Variables
-The new file name can contain any number of variables that will be replaced with their value. Some variables can take parameters and will be indicated in their description. To pass a parameter to a variable, just use the variable name followed by a pipe and the parameter. The output file name must be surrounded by quotes when using parameters. See the first example below for how to use parameters.    
+The new file name can contain any number of variables that will be replaced with their value. Some variables can take parameters and will be indicated in their description. To pass a parameter to a variable, just use the variable name followed by a pipe and the parameter. **The output file name must be surrounded by quotes when using parameters.** See the first example below for how to use parameters.    
 
  ```{{i}}``` Index: The index of the file when renaming multiple files. Parameters: starting index, default is 1.    
  ```{{f}}``` File name: The original name of the file. Parameters: upper, lower, camel, pascal, or none for unmodified.    
@@ -45,7 +45,7 @@ The new file name can contain any number of variables that will be replaced with
  ```{{ed}}``` Exif Date: The date/time photo was taken. Parameters: date format, default is yyyymmdd.    
 
 ### RegEx
-When you specify a RegEx pattern with the -r option, the regular expression will be run against the original file name and the first match will be used to replace {{r}} in the output file name. If the regular expression fails to match, and empty string will be returned. **DO NOT** include the forward slashes in your RegEx pattern.
+When you specify a RegEx pattern with the -r option, the regular expression will be run against the original file name and the first match will be used to replace {{r}} in the output file name. You can also use {{ra}} in the output file name to keep all matches separated by a string you supply as an argument (or no argument to just append all matches together). If the regular expression fails to match, and empty string will be returned. **DO NOT** include the forward slashes in your RegEx pattern.
 
  Groups:    
  You can write RegEx to capture one or more named groups and then use those groups in your output file name. The groups should be written like: ```(?<GroupName>regular expression here)```. If the RegEx groups do not return a match, the replacement variables in the output file name will be blank, so be sure to test with the -s option. See the third example below for how to use RegEx groups.
@@ -59,7 +59,7 @@ rename *.log "{{d|yyyymmdd}}{{f}}"
   node.log → 20170303node.log
   system.log → 20170303system.log
 ```
-##### *Note: the default format for the date variable is yyyymmdd so in the above example you could just write ```rename *.log {{d}}{{f}}``` to achieve the same result.*
+##### *Note: the default format for the date variable is yyyymmdd so in the above example you could just write ```rename *.log {{d}}{{f}}``` to achieve the same result. You can see default parameters for variables by typing ```rename -v```.*
 
 Rename all files the same and an index will be appended. The index will be prepended the correct number of zeroes to keep file order the same. For example if you are renaming 150 files, the first index will be 001. You can change the starting index by adding the index variable with a parameter ```{{i|42}}``` If you don't want to include indexes use the ```-n``` option. You will be prompted for any file conflicts.
 
@@ -76,6 +76,13 @@ rename -r "- (?<month>[A-Za-z]+) (?<year>\d{4})" --noindex ExpenseReport*.pdf "{
    ExpenseReport - August 2016.pdf → 2016 - August Expense Report.pdf
    ExpenseReport - March 2015.pdf → 2015 - March Expense Report.pdf
    ExpenseReport - October 2015.pdf → 2015 - October Expense Report.pdf
+```
+
+Use all RegEx matches in the output file name separated by a space. RegEx explaination: ```\w+``` captures a string of 1 or more word characters (A-Z, a-z, and _), ```(?=.+\d{4})``` is a forward lookahead for a number of 4 digits (this means it will only find words before the number), and then ```|``` or, ```\d{4}``` a number of 4 digits.
+
+```sh
+rename -r "\w+(?=.+\d{4})|\d{4}" My.File.With.Periods.2016.more.info.txt "{{ra| }}"
+   My.File.With.Periods.2016.more.info.txt → My File With Periods 2016.txt
 ```
 
 Extract Exif data from jpg images.

@@ -17,6 +17,7 @@ const argv = require('yargs')
         boolean: true,
         describe: 'Undo previous rename operation'
       }, 'r': {
+        alias: 'regex',
         describe: 'See RegEx section of online help for more information',
         type: 'string'
       }, 'f': {

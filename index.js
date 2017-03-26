@@ -49,12 +49,12 @@ module.exports = {
       if (args.r) {
         let pattern;
         try {
-          pattern = new RegExp(args.r.replace(/\(\?\<\w+\>/g, '('));
+          pattern = new RegExp(args.r.replace(/\(\?\<\w+\>/g, '('), 'g');
         } catch (err) {
           console.log(err.message);
           process.exit(1);
         }
-        fileObj.regexMatch = pattern.exec(fileObj.name);
+        fileObj.regexMatches = fileObj.name.match(pattern);
 
         let groupNames = args.r.match(/\<[A-Za-z]+\>/g);
         if (groupNames !== null) {
@@ -72,7 +72,7 @@ module.exports = {
       }
       
       // REPLACEMENT VARIABLES replace the replacement strings with their value
-      let repSearch = /\{{2}([\w]+?)\}{2}|\{{2}([\w]+?)\|(.+?)\}{2}/;
+      let repSearch = /\{{2}([\w]+?)\}{2}|\{{2}([\w]+?)\|(.*?)\}{2}/;
       let repResult = repSearch.exec(fileObj.newName);
       while (repResult !== null) {
         let repVar = repResult[1] || repResult[2];
