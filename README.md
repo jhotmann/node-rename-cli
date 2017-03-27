@@ -53,47 +53,47 @@ When you specify a RegEx pattern with the -r option, the regular expression will
 
 ## Examples
 
-Prepend date to file name. Date formatting options can be found [here](https://github.com/felixge/node-dateformat#mask-options).
+1. Prepend date to file name. Date formatting options can be found [here](https://github.com/felixge/node-dateformat#mask-options).
 
-```sh
-rename *.log "{{d|yyyymmdd}}{{f}}"
-  node.log → 20170303node.log
-  system.log → 20170303system.log
-```
-##### *Note: the default format for the date variable is yyyymmdd so in the above example you could just write ```rename *.log {{d}}{{f}}``` to achieve the same result. You can see default parameters for variables by typing ```rename -v```.*
+    ```sh
+    rename *.log "{{d|yyyymmdd}}{{f}}"
+      node.log → 20170303node.log
+      system.log → 20170303system.log
+    ```
+    ##### *Note: the default format for the date variable is yyyymmdd so in the above example you could just write ```rename *.log {{d}}{{f}}``` to achieve the same result. You can see default parameters for variables by typing ```rename -v```.*
 
-Rename all files the same and an index will be appended. The index will be prepended the correct number of zeroes to keep file order the same. For example if you are renaming 150 files, the first index will be 001. You can change the starting index by adding the index variable with a parameter ```{{i|42}}``` If you don't want to include indexes use the ```-n``` option. You will be prompted for any file conflicts.
+1. Rename all files the same and an index will be appended. The index will be prepended the correct number of zeroes to keep file order the same. For example if you are renaming 150 files, the first index will be 001. You can change the starting index by adding the index variable with a parameter ```{{i|42}}``` If you don't want to include indexes use the ```-n``` option. You will be prompted for any file conflicts.
 
-```sh
-rename *.log test
-   node.log → test1.log
-   system.log → test2.log
-```
+    ```sh
+    rename *.log test
+      node.log → test1.log
+      system.log → test2.log
+    ```
 
-Use RegEx groups to reuse sections of the original file name.
+1. Use RegEx groups to reuse sections of the original file name.
 
-```sh
-rename -r "- (?<month>[A-Za-z]+) (?<year>\d{4})" --noindex ExpenseReport*.pdf "{{year}} - {{month}} Expense Report"
-   ExpenseReport - August 2016.pdf → 2016 - August Expense Report.pdf
-   ExpenseReport - March 2015.pdf → 2015 - March Expense Report.pdf
-   ExpenseReport - October 2015.pdf → 2015 - October Expense Report.pdf
-```
+    ```sh
+    rename -r "- (?<month>[A-Za-z]+) (?<year>\d{4})" --noindex ExpenseReport*.pdf "{{year}} - {{month}} Expense Report"
+      ExpenseReport - August 2016.pdf → 2016 - August Expense Report.pdf
+      ExpenseReport - March 2015.pdf → 2015 - March Expense Report.pdf
+      ExpenseReport - October 2015.pdf → 2015 - October Expense Report.pdf
+    ```
 
-Use all RegEx matches in the output file name separated by a space. RegEx explaination: ```\w+``` captures a string of 1 or more word characters (A-Z, a-z, and _), ```(?=.+\d{4})``` is a forward lookahead for a number of 4 digits (this means it will only find words before the number), and then ```|``` or, ```\d{4}``` a number of 4 digits.
+1. Use all RegEx matches in the output file name separated by a space. RegEx explaination: ```\w+``` captures a string of 1 or more word characters (A-Z, a-z, and _), ```(?=.+\d{4})``` is a forward lookahead for a number of 4 digits (this means it will only find words before the number), and then ```|``` or, ```\d{4}``` a number of 4 digits.
 
-```sh
-rename -r "\w+(?=.+\d{4})|\d{4}" My.File.With.Periods.2016.more.info.txt "{{ra| }}"
-   My.File.With.Periods.2016.more.info.txt → My File With Periods 2016.txt
-```
+    ```sh
+    rename -r "\w+(?=.+\d{4})|\d{4}" My.File.With.Periods.2016.more.info.txt "{{ra| }}"
+      My.File.With.Periods.2016.more.info.txt → My File With Periods 2016.txt
+    ```
 
-Extract Exif data from jpg images.
+1. Extract Exif data from jpg images.
 
-```sh
-rename *.jpg "{{ed}}-NewYorkCity{{i}}-ISO{{eiso}}-f{{efnum}}-{{eex}}s"
-   DSC_5621.jpg → 20150927-NewYorkCity1-ISO250-f5.6-10s.jpg
-   DSC_5633.jpg → 20150928-NewYorkCity2-ISO125-f7.1-1/400s.jpg
-   DSC_5889.jpg → 20150930-NewYorkCity3-ISO125-f4.5-1/200s.jpg
-```
+    ```sh
+    rename *.jpg "{{ed}}-NewYorkCity{{i}}-ISO{{eiso}}-f{{efnum}}-{{eex}}s"
+      DSC_5621.jpg → 20150927-NewYorkCity1-ISO250-f5.6-10s.jpg
+      DSC_5633.jpg → 20150928-NewYorkCity2-ISO125-f7.1-1/400s.jpg
+      DSC_5889.jpg → 20150930-NewYorkCity3-ISO125-f4.5-1/200s.jpg
+    ```
 
 ## Installation
 1. Install NodeJS if you haven't already https://nodejs.org
