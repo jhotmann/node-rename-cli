@@ -1,4 +1,17 @@
 #!/usr/bin/env node
+// Handle EPIPE errors when user doesn't put quotes around output file name with parameters
+function epipeError(err) {
+  if (err.code === 'EPIPE' || err.errno === 32) return process.exit;
+
+  if (process.stdout.listeners('error').length <= 1) {
+    process.stdout.removeAllListeners();
+    process.stdout.emit('error', err);
+    process.stdout.on('error', epipeError);
+  }
+}
+
+process.stdout.on('error', epipeError);
+
 const argv = require('yargs')
     .usage('Rename-CLI v' + require('./package.json').version + '\n\nUsage:\n\n  rename [options] files new-file-name')
     .options({
@@ -32,6 +45,9 @@ const argv = require('yargs')
         alias: 'noindex',
         boolean: true,
         describe: 'Do not append an index when renaming multiple files'
+      }, 'verbose' : {
+        boolean: true,
+        describe: 'Print all rename operations completed'
       }
     })
     .help('help')
@@ -69,7 +85,7 @@ function parseArgs() {
     console.log('');
     console.log(index.getReplacements());
     process.exit(0);
-  } else if (argv.i) {
+  } else if (argv.i) { // view online hlep
     opn('https://github.com/jhotmann/node-rename-cli');
     if (process.platform !== 'win32') {
       process.exit(0);

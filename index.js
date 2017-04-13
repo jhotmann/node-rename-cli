@@ -20,9 +20,6 @@ const replacements = _.merge(defaultReplacements, userReplacements);
 
 module.exports = {
   thecommand: function(args) {
-    if (args.s) {
-      console.log('');
-    }
     let newFileName = path.parse(_.last(args._));
     let files = _.dropRight(args._);
     if (files.length === 0) {
@@ -93,27 +90,37 @@ module.exports = {
         fileObj.newName = fileObj.newName + replacements.i.function(fileObj, '1');
       }
 
-      // SIMULATED if argument --s just print what the output would be
-      if (args.s) {
-        console.log(fileObj.base + ' → ' + fileObj.newName + fileObj.newNameExt);
+      let operationText = fileObj.base + ' → ' + fileObj.newName + fileObj.newNameExt;
+
+      if (args.s) { // SIMULATED if argument --s just print what the output would be
+        operations.push({ text: operationText });
       } else { // RENAME the file(s)
         let originalFileName = path.format({dir: fileObj.dir, base: fileObj.base});
         let outputFileName = path.format({dir: fileObj.dir, base: fileObj.newName + fileObj.newNameExt});
         
         // FILE EXISTS if output file name already exists prompt for overwrite unless --f specified.
-        if (!args.f && fileExists.sync(outputFileName)) {
+        if (!args.f && originalFileName !== outputFileName && fileExists.sync(outputFileName)) {
           let response = prompt(fileObj.newName + fileObj.newNameExt + ' already exists. Would you like to replace it? (y/n) ');
           if (response === 'y') {
             renameFile(originalFileName, outputFileName);
-            operations.push({original: originalFileName, output: outputFileName});
+            operations.push({text: operationText, original: originalFileName, output: outputFileName});
           }
         } else {
           renameFile(originalFileName, outputFileName);
-          operations.push({original: originalFileName, output: outputFileName});
+          operations.push({text: operationText, original: originalFileName, output: outputFileName});
         }
       }
       fileIndex += 1;
     });
+
+    // PRINT simulated or verbose text
+    if ((args.s || args.verbose) && operations.length > 0) {
+      console.log('');
+      _.forEach(operations, function(value) {
+        console.log(value.text);
+      });
+      console.log('');
+    }
 
     // WRITE OPERATIONS so they can be undone if desired
     if (!args.s) {
@@ -137,7 +144,6 @@ module.exports = {
     fs.readJSON(undoFile, (err, packageObj) => {
       if (err) throw err;
       _.forEach(packageObj, function(value) {
-        //console.dir(value);
         let originalFileName = value.original;
         let outputFileName = value.output;
         renameFile(outputFileName, originalFileName);
