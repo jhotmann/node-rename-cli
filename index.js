@@ -22,10 +22,6 @@ module.exports = {
   thecommand: function(args) {
     let newFileName = path.parse(_.last(args._));
     let files = _.dropRight(args._);
-    if (files.length === 0) {
-      console.log('ERROR: Not enough arguments specified. Type rename -h for help');
-      process.exit(1);
-    }
     if (files.length === 1) { // TODO change this in case people specify multiple wildcard sources
       files = glob.sync(files[0]);
     }

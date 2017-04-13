@@ -12,7 +12,13 @@ function epipeError(err) {
 
 process.stdout.on('error', epipeError);
 
-const argv = require('yargs')
+const fs = require('fs-extra');
+const index = require('./index');
+const opn = require('opn');
+const os = require('os');
+const yargs = require('yargs');
+
+const argv = yargs
     .usage('Rename-CLI v' + require('./package.json').version + '\n\nUsage:\n\n  rename [options] files new-file-name')
     .options({
       'h': {
@@ -21,10 +27,6 @@ const argv = require('yargs')
         alias: 'info',
         boolean: true,
         describe: 'View online help'
-      }, 'v': {
-        alias: 'variables',
-        boolean: true,
-        describe: 'Display available variables'
       }, 'u': {
         alias: 'undo',
         boolean: true,
@@ -45,17 +47,16 @@ const argv = require('yargs')
         alias: 'noindex',
         boolean: true,
         describe: 'Do not append an index when renaming multiple files'
-      }, 'verbose' : {
+      }, 'v': {
+        alias: 'verbose',
         boolean: true,
         describe: 'Print all rename operations completed'
       }
     })
     .help('help')
+    .epilogue('Variables:\n\n' + index.getReplacements())
+    .wrap(yargs.terminalWidth())
     .argv;
-const fs = require('fs-extra');
-const index = require('./index');
-const opn = require('opn');
-const os = require('os');
 
 const userReplacements = os.homedir() + '/.rename/replacements.js';
 
@@ -80,19 +81,17 @@ fs.ensureFile(userReplacements, err => {
 });
 
 function parseArgs() {
-  if (argv.v) { // print variables
-    console.log('Variables:');
-    console.log('');
-    console.log(index.getReplacements());
-    process.exit(0);
-  } else if (argv.i) { // view online hlep
+  if (argv.i) { // view online hlep
     opn('https://github.com/jhotmann/node-rename-cli');
     if (process.platform !== 'win32') {
       process.exit(0);
     }
   } else if (argv.u) { // undo previous rename
     index.undoRename();
-  } else { // proceed to index.js to do the rename
+  } else if (argv._.length > 1) { // proceed to index.js to do the rename
     index.thecommand(argv);
+  } else {
+    console.log('ERROR: Not enough arguments specified. Type rename -h for help');
+    process.exit(1);
   }
 }
