@@ -25,6 +25,7 @@ The new file name does not need to contain a file extension. If you do not speci
  ```-f```, ```--force```: Force overwrite without prompt when output file name already exists    
  ```-s```, ```--sim```: Simulate rename and just print new file names    
  ```-n```, ```--noindex```: Do not append an index when renaming multiple files. Use with caution.    
+ ```-verbose```: Print all rename operations completed. Prints the same information as the -s option but goes through with the renames.    
  ```-h```, ```--help```: Show help
 
 ### Variables
