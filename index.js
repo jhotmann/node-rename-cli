@@ -47,6 +47,7 @@ module.exports = {
           console.log(err.message);
           process.exit(1);
         }
+        fileObj.regexPattern = pattern;
         fileObj.regexMatches = fileObj.name.match(pattern);
 
         let groupNames = args.r.match(/\<[A-Za-z]+\>/g);

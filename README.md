@@ -8,6 +8,7 @@ A cross-platform tool for renaming files quickly, especially multiple files at o
 - Ability to add your own variables
 - Auto-indexing when renaming multiple files
 - RegEx support for using part(s) of original file name
+- RegEx replace part(s) of the original file name
 - Exif data support
 
 ## Usage
@@ -33,13 +34,14 @@ The new file name can contain any number of variables that will be replaced with
  ```{{i}}``` Index: The index of the file when renaming multiple files. Parameters: starting index, default is 1.    
  ```{{f}}``` File name: The original name of the file. Parameters: upper, lower, camel, pascal, or none for unmodified.    
  ```{{r}}``` RegEx First: The first match of the RegEx pattern specified in -r "...".    
- ```{{ra}}``` RegEx All: All matches of the RegEx pattern specified in -r "...". Parameters: separator character(s), default is none.    
+ ```{{ra}}``` RegEx All: All matches of the RegEx pattern specified in -r "...". Parameters: separator character(s), default is none.  
+ ```{{rn}}``` RegEx Not: Everything except for the matches of the RegEx pattern specified in -r "...". Parameters: replacement character(s), default is none    
  ```{{p}}``` Parent directory: The name of the parent directory. Parameters: upper, lower, camel, pascal, or none for unmodified.    
  ```{{d}}``` Date: The current date/time. Parameters: date format, default is yyyymmdd.    
  ```{{cd}}``` Create date: The date/time the file was created. Parameters: date format, default is yyyymmdd.    
  ```{{md}}``` Modified date: The date/time the file was modified. Parameters: date format, default is yyyymmdd.    
  ```{{ad}}``` Accessed date: The date/time the file was accessed. Parameters: date format, default is yyyymmdd.    
- ```{{g}}``` GUID: A globally unique identifier.    
+ ```{{g}}``` GUID: A globally unique identifier. Parameters: pattern using x's which will be replaced as random 16bit characters and y's which will be replaced with a, b, 8, or 9. Default is xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx    
  ```{{eiso}}``` Exif ISO: Photo ISO value.    
  ```{{efnum}}``` Exif FNumber: Photo FNumber value.    
  ```{{eex}}``` Exif Exposure Time: Photo exposure time value.    
@@ -47,6 +49,9 @@ The new file name can contain any number of variables that will be replaced with
 
 ### RegEx
 When you specify a RegEx pattern with the -r option, the regular expression will be run against the original file name and the first match will be used to replace {{r}} in the output file name. You can also use {{ra}} in the output file name to keep all matches separated by a string you supply as an argument (or no argument to just append all matches together). If the regular expression fails to match, and empty string will be returned. **DO NOT** include the forward slashes in your RegEx pattern.
+
+ Regex Replace:    
+ You can write RegEx to replace characters you don't want. To do this, use a RegEx pattern to match things you want to remove like ```\s``` and for your output file name use ```"{{rn|-}}``` with the characters you want to use as replacements after the pipe.  In this example, all spaces will be replaced by dashes, so if you had a file named ```My Text File.txt``` it would become ```My-Text-File.txt```. Or if you want to replace a specific word you could do something like the following: ```-r "Text"``` with the output file name ```"{{rn|Log}}"``` and your new file name would be ```My Log File.txt```. If you want to easily replace all characters that aren't a letter, number, or underscore use ```\W``` (yes, that's a capital W) as your RegEx pattern.
 
  Groups:    
  You can write RegEx to capture one or more named groups and then use those groups in your output file name. The groups should be written like: ```(?<GroupName>regular expression here)```. If the RegEx groups do not return a match, the replacement variables in the output file name will be blank, so be sure to test with the -s option. See the third example below for how to use RegEx groups.
