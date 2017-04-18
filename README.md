@@ -12,7 +12,7 @@ A cross-platform tool for renaming files quickly, especially multiple files at o
 - Exif data support
 
 ## Usage
-```rename [options] files new-file-name```
+```rename [options] file(s) new-file-name```
 
 *Note: Windows users (or anyone who wants to type one less letter) can use rname instead of rename since the rename command already exists in Windows*
 
@@ -109,7 +109,7 @@ Whenever you run rename for the first time a file ```~/.rename/replacements.js``
 
 ## Libraries Used
 - yargs https://github.com/yargs/yargs
-- glob https://github.com/isaacs/node-glob
+- globby https://github.com/sindresorhus/globby
 - fs-extra https://github.com/jprichardson/node-fs-extra
 - file-exists https://github.com/scottcorgan/file-exists
 - prompt-sync https://github.com/0x00A/prompt-sync

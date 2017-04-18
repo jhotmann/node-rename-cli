@@ -19,7 +19,7 @@ const os = require('os');
 const yargs = require('yargs');
 
 const argv = yargs
-    .usage('Rename-CLI v' + require('./package.json').version + '\n\nUsage:\n\n  rename [options] files new-file-name')
+    .usage('Rename-CLI v' + require('./package.json').version + '\n\nUsage:\n\n  rename [options] file(s) new-file-name')
     .options({
       'h': {
         alias: 'help'

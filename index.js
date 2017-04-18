@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const fileExists = require('file-exists');
 const fs = require('fs-extra');
-const glob = require("glob");
+const globby = require("globby");
 const namedRegexp = require("named-js-regexp");
 const os = require('os');
 const path = require('path');
@@ -22,8 +22,8 @@ module.exports = {
   thecommand: function(args) {
     let newFileName = path.parse(_.last(args._));
     let files = _.dropRight(args._);
-    if (files.length === 1) { // TODO change this in case people specify multiple wildcard sources
-      files = glob.sync(files[0]);
+    if (globby.hasMagic(files)) {
+      files = globby.sync(files);
     }
     let operations = [];
     let fileIndex = 1;
