@@ -87,6 +87,11 @@ module.exports = {
         fileObj.newName = fileObj.newName + replacements.i.function(fileObj, '1');
       }
 
+      // TRIM output file name unless --notrim option used
+      if (!args.notrim) {
+        fileObj.newName = fileObj.newName.trim();
+      }
+
       let operationText = fileObj.base + ' → ' + fileObj.newName + fileObj.newNameExt;
 
       if (args.s) { // SIMULATED if argument --s just print what the output would be

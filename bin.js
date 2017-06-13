@@ -51,6 +51,9 @@ const argv = yargs
         alias: 'verbose',
         boolean: true,
         describe: 'Print all rename operations completed'
+      }, 'notrim': {
+        boolean: true,
+        describe: 'Do not trim whitespace at beginning or end of ouput file name'
       }
     })
     .help('help')

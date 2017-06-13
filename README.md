@@ -26,6 +26,7 @@ The new file name does not need to contain a file extension. If you do not speci
  ```-s```, ```--sim```: Simulate rename and just print new file names    
  ```-n```, ```--noindex```: Do not append an index when renaming multiple files. Use with caution.    
  ```-v```, ```--verbose```: Print all rename operations completed. Prints the same information as the -s option but goes through with the renames.    
+ ```--notrim```: Do not trim whitespace at beginning or end of ouput file name    
  ```-h```, ```--help```: Show help
 
 ### Variables
