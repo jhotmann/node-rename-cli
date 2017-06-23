@@ -68,7 +68,7 @@ When you specify a RegEx pattern with the -r option, the regular expression will
     ```
     ##### *Note: the default format for the date variable is yyyymmdd so in the above example you could just write ```rename *.log {{d}}{{f}}``` to achieve the same result. You can see default parameters for variables by typing ```rename -v```.*
 
-1. Rename all files the same and an index will be appended. The index will be prepended the correct number of zeroes to keep file order the same. For example if you are renaming 150 files, the first index will be 001. You can change the starting index by adding the index variable with a parameter ```{{i|42}}``` If you don't want to include indexes use the ```-n``` option. You will be prompted for any file conflicts.
+1. Rename all files the same and an index number will be appended. The index will be prepended with the correct number of zeroes to keep file order the same. For example, if you are renaming 150 files, the first index will be 001. You can change the starting index by adding the index variable with a parameter ```{{i|42}}``` If you don't want to include indexes use the ```-n``` option. You will be prompted for any file conflicts. Each file extension in a rename operation will have its own independent index.
 
     ```sh
     rename *.log test

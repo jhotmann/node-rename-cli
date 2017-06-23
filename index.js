@@ -22,11 +22,31 @@ module.exports = {
   thecommand: function(args) {
     let newFileName = path.parse(_.last(args._));
     let files = _.dropRight(args._);
-    if (globby.hasMagic(files)) {
+    if (globby.hasMagic(files)) { // glob file match on platforms that don't natively support it (Windows)
       files = globby.sync(files);
     }
     let operations = [];
-    let fileIndex = 1;
+
+    // BUILD FILE INDICIES by file extension
+    let fileIndex = {};
+    if (newFileName.ext) {
+      fileIndex[newFileName.ext] = {
+        index: 1,
+        total: files.length
+      };
+    } else {
+      _.forEach(files, function(value) {
+        let fileObj = path.parse(path.resolve(value));
+        if (fileIndex[fileObj.ext]) {
+          fileIndex[fileObj.ext].total += 1;
+        } else {
+          fileIndex[fileObj.ext] = {
+            index: 1,
+            total: 1
+          };
+        }
+      });
+    }
     
     // FOR EACH FILE
     _.forEach(files, function(value) {
@@ -35,8 +55,8 @@ module.exports = {
       let fileObj = path.parse(fullPath);
       fileObj.newName = newFileName.name;
       fileObj.newNameExt = (newFileName.ext ? newFileName.ext : fileObj.ext);
-      fileObj.index = fileIndex;
-      fileObj.totalFiles = files.length;
+      fileObj.index = fileIndex[fileObj.newNameExt].index;
+      fileObj.totalFiles = fileIndex[fileObj.newNameExt].total;
 
       // REGEX match and group replacement
       if (args.r) {
@@ -112,7 +132,7 @@ module.exports = {
           operations.push({text: operationText, original: originalFileName, output: outputFileName});
         }
       }
-      fileIndex += 1;
+      fileIndex[fileObj.newNameExt].index += 1;
     });
 
     // PRINT simulated or verbose text
