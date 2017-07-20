@@ -12,10 +12,14 @@ function epipeError(err) {
 
 process.stdout.on('error', epipeError);
 
+const _ = require('lodash');
+const chalk = require('chalk');
 const fs = require('fs-extra');
 const index = require('./index');
 const opn = require('opn');
 const os = require('os');
+const path = require('path');
+const prompt = require('prompt-sync')();
 const yargs = require('yargs');
 
 const argv = yargs
@@ -91,10 +95,72 @@ function parseArgs() {
     }
   } else if (argv.u) { // undo previous rename
     index.undoRename();
-  } else if (argv._.length > 1) { // proceed to index.js to do the rename
-    index.thecommand(argv);
+  } else if (argv.w) { // launch the wizard
+    require('./lib/wizard')();
+  } else if (argv._.length > 1) { // proceed to do the rename
+    renameFiles();
   } else {
     console.log('ERROR: Not enough arguments specified. Type rename -h for help');
     process.exit(1);
+  }
+}
+
+function renameFiles() {
+  let files = index.getFileArray(_.dropRight(argv._));
+  let newFileName = path.parse(_.last(argv._));
+  let options = {
+    regex: (argv.r ? argv.r : false),
+    force: (argv.f ? true : false),
+    simulate: (argv.s ? true : false),
+    verbose: (argv.v ? true : false),
+    noIndex: (argv.n ? true : false),
+    noTrim: (argv.notrim ? true : false)
+  };
+  let operations = index.getOperations(files, newFileName, options);
+  let hasConflicts = index.hasConflicts(operations);
+  
+  // Print off renames if simulated or verbose options used, or warn if there are file
+  // conflicts and the force option isn't used.
+  if (options.simulate || options.verbose || (!options.force && hasConflicts)) {
+    let conflicts = false;
+    let existing = false;
+    console.log('');
+    _.forEach(operations, function(value) {
+      if (value.alreadyExists) {
+        console.log(chalk.red(value.text));
+        existing = true;
+      } else if (value.conflict) {
+        console.log(chalk.yellow(value.text));
+        conflicts = true;
+      } else {
+        console.log(value.text);
+      }
+    });
+    if (existing || conflicts) {
+      console.log('');
+    }
+    if (existing) {
+      console.log(chalk.red('WARNING: File(s) already exist'));
+      if (!options.simulate && !options.force) {
+        console.log('');
+      }
+    }
+    if (conflicts) {
+      console.log(chalk.yellow('WARNING: There are conflicting output file name(s)'));
+      if (!options.simulate && !options.force) {
+        console.log('');
+      }
+    }
+    if (!options.simulate && (existing || conflicts || options.verbose)) {
+      if (!hasConflicts) {
+        console.log('');
+      }
+      let conflictPrompt = prompt('Would you like to proceed? (y/n) ');
+      if (conflictPrompt === 'y') {
+        index.run(operations, options);
+      }
+    }
+  } else {
+    index.run(operations, options);
   }
 }
