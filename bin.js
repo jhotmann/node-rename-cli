@@ -31,6 +31,10 @@ const argv = yargs
         alias: 'info',
         boolean: true,
         describe: 'View online help'
+      }, 'w': {
+        alias: 'wizard',
+        boolean: true,
+        describe: 'Run a wizard to guide you through renaming files'
       }, 'u': {
         alias: 'undo',
         boolean: true,
@@ -54,7 +58,7 @@ const argv = yargs
       }, 'v': {
         alias: 'verbose',
         boolean: true,
-        describe: 'Print all rename operations completed'
+        describe: 'Print all rename operations to be completed and confirm before proceeding'
       }, 'notrim': {
         boolean: true,
         describe: 'Do not trim whitespace at beginning or end of ouput file name'

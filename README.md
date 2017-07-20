@@ -20,12 +20,13 @@ The new file name does not need to contain a file extension. If you do not speci
 
 ### Options
  ```-i```, ```--info```: View online help    
+ ```-w```, ```--wizard```: Run a wizard to guide you through renaming files    
  ```-u```, ```--undo```: Undo previous rename operation    
  ```-r "RegEx"```: See [RegEx](#regex) section for more information    
  ```-f```, ```--force```: Force overwrite without prompt when output file name already exists    
  ```-s```, ```--sim```: Simulate rename and just print new file names    
  ```-n```, ```--noindex```: Do not append an index when renaming multiple files. Use with caution.    
- ```-v```, ```--verbose```: Print all rename operations completed. Prints the same information as the -s option but goes through with the renames.    
+ ```-v```, ```--verbose```: Print all rename operations to be completed and confirm before proceeding
  ```--notrim```: Do not trim whitespace at beginning or end of ouput file name    
  ```-h```, ```--help```: Show help
 
@@ -112,7 +113,6 @@ Whenever you run rename for the first time a file ```~/.rename/replacements.js``
 - yargs https://github.com/yargs/yargs
 - globby https://github.com/sindresorhus/globby
 - fs-extra https://github.com/jprichardson/node-fs-extra
-- file-exists https://github.com/scottcorgan/file-exists
 - prompt-sync https://github.com/0x00A/prompt-sync
 - lodash https://lodash.com/
 - node-dateformat https://github.com/felixge/node-dateformat
@@ -120,3 +120,8 @@ Whenever you run rename for the first time a file ```~/.rename/replacements.js``
 - num2fraction https://github.com/yisibl/num2fraction
 - jpeg-exif https://github.com/zhso/jpeg-exif
 - opn https://github.com/sindresorhus/opn
+- path-exists https://github.com/sindresorhus/path-exists
+- chalk https://github.com/chalk/chalk
+- cli-clear https://github.com/stevenvachon/cli-clear
+- inquirer https://github.com/SBoudrias/Inquirer.js
+- clipboardy https://github.com/sindresorhus/clipboardy
