@@ -24,48 +24,9 @@ const yargs = require('yargs');
 
 const argv = yargs
     .usage('Rename-CLI v' + require('./package.json').version + '\n\nUsage:\n\n  rename [options] file(s) new-file-name')
-    .options({
-      'h': {
-        alias: 'help'
-      }, 'i': {
-        alias: 'info',
-        boolean: true,
-        describe: 'View online help'
-      }, 'w': {
-        alias: 'wizard',
-        boolean: true,
-        describe: 'Run a wizard to guide you through renaming files'
-      }, 'u': {
-        alias: 'undo',
-        boolean: true,
-        describe: 'Undo previous rename operation'
-      }, 'r': {
-        alias: 'regex',
-        describe: 'See RegEx section of online help for more information',
-        type: 'string'
-      }, 'f': {
-        alias: 'force',
-        boolean: true,
-        describe: 'Force overwrite without prompt when output file name already exists'
-      }, 's': {
-        alias: 'sim',
-        boolean: true,
-        describe: 'Simulate rename and just print new file names'
-      }, 'n': {
-        alias: 'noindex',
-        boolean: true,
-        describe: 'Do not append an index when renaming multiple files'
-      }, 'v': {
-        alias: 'verbose',
-        boolean: true,
-        describe: 'Print all rename operations to be completed and confirm before proceeding'
-      }, 'notrim': {
-        boolean: true,
-        describe: 'Do not trim whitespace at beginning or end of ouput file name'
-      }
-    })
+    .options(require('./lib/yargsOptions'))
     .help('help')
-    .epilogue('Variables:\n\n' + index.getReplacements())
+    .epilogue('Variables:\n\n' + index.getReplacementsList())
     .wrap(yargs.terminalWidth())
     .argv;
 
@@ -103,6 +64,8 @@ function parseArgs() {
     require('./lib/wizard')();
   } else if (argv._.length > 1) { // proceed to do the rename
     renameFiles();
+  } else if (argv._.length === 0) {
+    require('./lib/rename');
   } else {
     console.log('ERROR: Not enough arguments specified. Type rename -h for help');
     process.exit(1);
@@ -114,6 +77,7 @@ function renameFiles() {
   let newFileName = path.parse(_.last(argv._));
   let options = {
     regex: (argv.r ? argv.r : false),
+    keep: (argv.k ? true : false),
     force: (argv.f ? true : false),
     simulate: (argv.s ? true : false),
     verbose: (argv.v ? true : false),
@@ -125,7 +89,7 @@ function renameFiles() {
   
   // Print off renames if simulated or verbose options used, or warn if there are file
   // conflicts and the force option isn't used.
-  if (options.simulate || options.verbose || (!options.force && hasConflicts)) {
+  if (options.simulate || options.verbose || (!options.force && !options.keep && hasConflicts)) {
     let conflicts = false;
     let existing = false;
     console.log('');

@@ -148,11 +148,24 @@ function run(operations, options) { // RENAME files
   let completedOps = [];
   _.forEach(operations, function(operation) {
     if (!options.force && operation.original.toLowerCase() !== operation.output.toLowerCase() && pathExists.sync(operation.output)) {
-      console.log('\n' + operation.text);
-      let response = prompt(operation.text.split(' → ')[1] + ' already exists. Would you like to replace it? (y/n) ');
-      if (response === 'y') {
+      if (options.keep) {
+        operation = keepFiles(operation);
         renameFile(operation.original, operation.output);
         completedOps.push(operation);
+      } else {
+        console.log('\n' + operation.text + '\n' + operation.text.split(' → ')[1] + ' already exists. What would you like to do?');
+        console.log('1) Overwrite the file');
+        console.log('2) Keep both files');
+        console.log('3) Skip');
+        let response = prompt('Please input a number: ');
+        if (response === '1') {
+          renameFile(operation.original, operation.output);
+          completedOps.push(operation);
+        } else if (response === '2') {
+          operation = keepFiles(operation);
+          renameFile(operation.original, operation.output);
+          completedOps.push(operation);
+        }
       }
     } else {
       renameFile(operation.original, operation.output);
@@ -163,7 +176,7 @@ function run(operations, options) { // RENAME files
   writeUndoFile(completedOps);
 }
 
-function getReplacements() { // GET LIST OF REPLACEMENT VARIABLES
+function getReplacementsList() { // GET LIST OF REPLACEMENT VARIABLES
   let descIndex = 16;
   let returnText = '';
   _.forEach(REPLACEMENTS, function(value, key) {
@@ -174,6 +187,10 @@ function getReplacements() { // GET LIST OF REPLACEMENT VARIABLES
     }
   });
   return returnText;
+}
+
+function getReplacements() {
+  return REPLACEMENTS;
 }
 
 function undoRename() { // UNDO PREVIOUS RENAME
@@ -192,9 +209,11 @@ function undoRename() { // UNDO PREVIOUS RENAME
 }
 
 function renameFile(oldName, newName) { // rename the file
-  fs.rename(oldName, newName, function(err) {
-    if (err) throw err;
-  });
+  try {
+    fs.renameSync(oldName, newName);
+  } catch (e) {
+    throw(e);
+  }
 }
 
 function writeUndoFile(operations) {
@@ -203,11 +222,27 @@ function writeUndoFile(operations) {
   });
 }
 
+function keepFiles(operation) {
+  let appendedInt = 0;
+  let newPathObj = path.parse(operation.output);
+  let newFilePath;
+  let newFileName;
+  do {
+    appendedInt += 1;
+    newFilePath = newPathObj.dir + path.sep + newPathObj.name + '-' + appendedInt + newPathObj.ext;
+    newFileName = newPathObj.name + '-' + appendedInt + newPathObj.ext;
+  } while (pathExists.sync(newFilePath));
+  operation.text = operation.text.split(' → ')[0] + ' → ' + newFileName;
+  operation.output = newFilePath;
+  return operation;
+}
+
 module.exports = {
   getOperations: getOperations,
   run: run,
   getFileArray: getFileArray,
   hasConflicts: hasConflicts,
+  getReplacementsList: getReplacementsList,
   getReplacements: getReplacements,
   undoRename: undoRename
 };

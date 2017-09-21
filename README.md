@@ -23,6 +23,7 @@ The new file name does not need to contain a file extension. If you do not speci
  ```-w```, ```--wizard```: Run a wizard to guide you through renaming files    
  ```-u```, ```--undo```: Undo previous rename operation    
  ```-r "RegEx"```: See [RegEx](#regex) section for more information    
+ ```-k```, ```--keep```: Keep both files when output file name already exists (append a number)    
  ```-f```, ```--force```: Force overwrite without prompt when output file name already exists    
  ```-s```, ```--sim```: Simulate rename and just print new file names    
  ```-n```, ```--noindex```: Do not append an index when renaming multiple files. Use with caution.    
