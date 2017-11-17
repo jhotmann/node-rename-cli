@@ -123,6 +123,18 @@ function getOperations(files, newFileName, options) {
   return operations;
 }
 
+function argvToOptions(argv) {
+  return {
+    regex: (argv.r ? argv.r : false),
+    keep: (argv.k ? true : false),
+    force: (argv.f ? true : false),
+    simulate: (argv.s ? true : false),
+    verbose: (argv.v ? true : false),
+    noIndex: (argv.n ? true : false),
+    noTrim: (argv.notrim ? true : false)
+  };
+}
+
 function getFileArray(files) {
   if (globby.hasMagic(files)) {
     files = globby.sync(files);
@@ -239,6 +251,7 @@ function keepFiles(operation) {
 
 module.exports = {
   getOperations: getOperations,
+  argvToOptions: argvToOptions,
   run: run,
   getFileArray: getFileArray,
   hasConflicts: hasConflicts,

@@ -75,15 +75,7 @@ function parseArgs() {
 function renameFiles() {
   let files = index.getFileArray(_.dropRight(argv._));
   let newFileName = path.parse(_.last(argv._));
-  let options = {
-    regex: (argv.r ? argv.r : false),
-    keep: (argv.k ? true : false),
-    force: (argv.f ? true : false),
-    simulate: (argv.s ? true : false),
-    verbose: (argv.v ? true : false),
-    noIndex: (argv.n ? true : false),
-    noTrim: (argv.notrim ? true : false)
-  };
+  let options = index.argvToOptions(argv);
   let operations = index.getOperations(files, newFileName, options);
   let hasConflicts = index.hasConflicts(operations);
   
