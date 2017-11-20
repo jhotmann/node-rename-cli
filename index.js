@@ -84,7 +84,7 @@ function getOperations(files, newFileName, options) {
     let repResult = repSearch.exec(fileObj.newName);
     while (repResult !== null) {
       let repVar = repResult[1] || repResult[2];
-      if (REPLACEMENTS[repVar]) {
+      if (Object.keys(REPLACEMENTS).indexOf(repVar) > -1) {
         let repObj = REPLACEMENTS[repVar];
         let defaultArg = (repObj.parameters && repObj.parameters.default ? repObj.parameters.default : '');
         let repArg = (repResult[3] ? repResult[3] : defaultArg);
@@ -92,8 +92,10 @@ function getOperations(files, newFileName, options) {
         if (repObj.unique) {
           uniqueName = true;
         }
-        repResult = repSearch.exec(fileObj.newName);
+      } else {
+        throw 'InvalidReplacementVariable';
       }
+      repResult = repSearch.exec(fileObj.newName);
     }
 
     // APPEND INDEX if output file names are not unique
@@ -146,7 +148,7 @@ function hasConflicts(operations) {
   return (_.find(operations, function(o) { return (o.conflict === true || o.alreadyExists === true); }) ? true : false);
 }
 
-function run(operations, options) { // RENAME files
+function run(operations, options, exitWhenFinished) { // RENAME files
   if (!options) {
     options = {
       regex: false,
@@ -185,7 +187,7 @@ function run(operations, options) { // RENAME files
     }
   });
 
-  writeUndoFile(completedOps);
+  writeUndoFile(completedOps, (exitWhenFinished === true ? true : false));
 }
 
 function getReplacementsList() { // GET LIST OF REPLACEMENT VARIABLES
@@ -228,9 +230,10 @@ function renameFile(oldName, newName) { // rename the file
   }
 }
 
-function writeUndoFile(operations) {
+function writeUndoFile(operations, exitWhenFinished) {
   fs.writeJSON(UNDO_FILE, operations, (err) => {
     if (err) throw err;
+    if (exitWhenFinished) process.exit(0);
   });
 }
 
