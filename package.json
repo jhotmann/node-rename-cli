@@ -9,7 +9,8 @@
     "rname": "./bin.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "pkg -o bin\\rname -t node9-win-x64 ."
   },
   "author": "Jordan Hotmann",
   "license": "MIT",
@@ -35,5 +36,8 @@
     "prompt-sync": "^4.1.4",
     "remark": "^8.0.0",
     "yargs": "^8.0.2"
+  },
+  "pkg": {
+    "assets": "lib/userReplacements.js"
   }
 }

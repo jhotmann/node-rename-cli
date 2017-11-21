@@ -31,6 +31,7 @@ const argv = yargs
     .argv;
 
 const userReplacements = os.homedir() + '/.rename/replacements.js';
+const compiled = (argv['$0'] && argv['$0'].indexOf('rname.exe') > -1);
 
 // check if ~/.rename/replacements.js exists, if not create it and
 // then copy in the text from ./userReplacements.js
@@ -64,7 +65,7 @@ function parseArgs() {
     require('./lib/wizard')();
   } else if (argv._.length > 1) { // proceed to do the rename
     renameFiles();
-  } else if (argv._.length === 0) {
+  } else if (argv._.length === 0 && !compiled) {
     require('./lib/rename');
   } else {
     console.log('ERROR: Not enough arguments specified. Type rename -h for help');
