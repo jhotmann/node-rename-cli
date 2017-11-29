@@ -1,6 +1,8 @@
 # Rename-CLI
 A cross-platform tool for renaming files quickly, especially multiple files at once.
 
+![gif preview](images/rename.gif)
+
 ## Features
 - Glob file matching
 - Undo previous rename
@@ -112,6 +114,7 @@ Whenever you run rename for the first time a file ```~/.rename/replacements.js``
 
 ## Libraries Used
 - yargs https://github.com/yargs/yargs
+- blessed https://github.com/chjj/blessed
 - globby https://github.com/sindresorhus/globby
 - fs-extra https://github.com/jprichardson/node-fs-extra
 - prompt-sync https://github.com/0x00A/prompt-sync
@@ -126,3 +129,4 @@ Whenever you run rename for the first time a file ```~/.rename/replacements.js``
 - cli-clear https://github.com/stevenvachon/cli-clear
 - inquirer https://github.com/SBoudrias/Inquirer.js
 - clipboardy https://github.com/sindresorhus/clipboardy
+- remark https://github.com/wooorm/remark
