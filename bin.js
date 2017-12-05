@@ -12,7 +12,6 @@ function epipeError(err) {
 
 process.stdout.on('error', epipeError);
 
-const _ = require('lodash');
 const chalk = require('chalk');
 const fs = require('fs-extra');
 const index = require('./index');
@@ -74,8 +73,8 @@ function parseArgs() {
 }
 
 function renameFiles() {
-  let files = index.getFileArray(_.dropRight(argv._));
-  let newFileName = path.parse(_.last(argv._));
+  let newFileName = path.parse(argv._.pop());
+  let files = index.getFileArray(argv._);
   let options = index.argvToOptions(argv);
   let operations = index.getOperations(files, newFileName, options);
   let hasConflicts = index.hasConflicts(operations);
@@ -86,7 +85,7 @@ function renameFiles() {
     let conflicts = false;
     let existing = false;
     console.log('');
-    _.forEach(operations, function(value) {
+    operations.forEach(function(value) {
       if (value.alreadyExists) {
         console.log(chalk.red(value.text));
         existing = true;

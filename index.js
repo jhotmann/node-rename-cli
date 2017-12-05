@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const fs = require('fs-extra');
 const globby = require("globby");
 const namedRegexp = require("named-js-regexp");
@@ -16,34 +15,16 @@ if (pathExists.sync(os.homedir() + '/.rename/replacements.js')) {
 }
 const UNDO_FILE = os.homedir() + '/.rename/undo.json';
 
-const REPLACEMENTS = _.merge(defaultReplacements, userReplacements);
+const REPLACEMENTS = Object.assign(defaultReplacements, userReplacements);
 
 function getOperations(files, newFileName, options) {
   let operations = [];
 
   // BUILD FILE INDICIES by file extension
-  let fileIndex = {};
-  if (newFileName.ext) {
-    fileIndex[newFileName.ext] = {
-      index: 1,
-      total: files.length
-    };
-  } else {
-    _.forEach(files, function(value) {
-      let fileObj = path.parse(path.resolve(value));
-      if (fileIndex[fileObj.ext]) {
-        fileIndex[fileObj.ext].total += 1;
-      } else {
-        fileIndex[fileObj.ext] = {
-          index: 1,
-          total: 1
-        };
-      }
-    });
-  }
+  let fileIndex = buildFileIndex(files, newFileName);
   
   // FOR EACH FILE
-  _.forEach(files, function(value) {
+  files.forEach(function(value) {
     let uniqueName = (files.length > 1 ? false: true);
     let fullPath = path.resolve(value);
     let fileObj = path.parse(fullPath);
@@ -54,49 +35,12 @@ function getOperations(files, newFileName, options) {
 
     // REGEX match and group replacement
     if (options.regex) {
-      let pattern;
-      try {
-        pattern = new RegExp(options.regex.replace(/\(\?\<\w+\>/g, '('), 'g');
-      } catch (err) {
-        console.log(err.message);
-        process.exit(1);
-      }
-      fileObj.regexPattern = pattern;
-      fileObj.regexMatches = fileObj.name.match(pattern);
-
-      let groupNames = options.regex.match(/\<[A-Za-z]+\>/g);
-      if (groupNames !== null) {
-        let re = namedRegexp(options.regex);
-        let reGroups = re.execGroups(fileObj.name);
-        _.forEach(groupNames, function(value) {
-          let g = value.replace(/\W/g, '');
-          if (reGroups && reGroups[g]) {
-            fileObj.newName = fileObj.newName.replace('{{' + g + '}}', reGroups[g]);
-          } else {
-            fileObj.newName = fileObj.newName.replace('{{' + g + '}}', '');
-          }
-        });
-      }
+      fileObj = regexMatch(fileObj, options);
+      fileObj = regexGroupReplacement(fileObj, options);
     }
     
     // REPLACEMENT VARIABLES replace the replacement strings with their value
-    let repSearch = /\{{2}([\w]+?)\}{2}|\{{2}([\w]+?)\|(.*?)\}{2}/;
-    let repResult = repSearch.exec(fileObj.newName);
-    while (repResult !== null) {
-      let repVar = repResult[1] || repResult[2];
-      if (Object.keys(REPLACEMENTS).indexOf(repVar) > -1) {
-        let repObj = REPLACEMENTS[repVar];
-        let defaultArg = (repObj.parameters && repObj.parameters.default ? repObj.parameters.default : '');
-        let repArg = (repResult[3] ? repResult[3] : defaultArg);
-        fileObj.newName = fileObj.newName.replace(repResult[0], repObj.function(fileObj, repArg));
-        if (repObj.unique) {
-          uniqueName = true;
-        }
-      } else {
-        throw 'InvalidReplacementVariable';
-      }
-      repResult = repSearch.exec(fileObj.newName);
-    }
+    [fileObj, uniqueName] = replaceVariables(fileObj, uniqueName);
 
     // APPEND INDEX if output file names are not unique
     if (!uniqueName && !options.noIndex && fileIndex[fileObj.ext].total > 1) {
@@ -112,7 +56,7 @@ function getOperations(files, newFileName, options) {
     let operationText = fileObj.base + ' → ' + fileObj.newName + fileObj.newNameExt;
     let originalFileName = path.format({dir: fileObj.dir, base: fileObj.base});
     let outputFileName = path.format({dir: fileObj.dir, base: fileObj.newName + fileObj.newNameExt});
-    let conflict = (_.find(operations, function(o) { return o.output === outputFileName; }) ? true : false);
+    let conflict = (operations.find(function(o) { return o.output === outputFileName; }) ? true : false);
     let alreadyExists = false;
     if (originalFileName.toLowerCase() !== outputFileName.toLowerCase()) {
       alreadyExists = pathExists.sync(outputFileName);
@@ -145,7 +89,7 @@ function getFileArray(files) {
 }
 
 function hasConflicts(operations) {
-  return (_.find(operations, function(o) { return (o.conflict === true || o.alreadyExists === true); }) ? true : false);
+  return (operations.find(function(o) { return (o.conflict === true || o.alreadyExists === true); }) ? true : false);
 }
 
 function run(operations, options, exitWhenFinished) { // RENAME files
@@ -160,7 +104,7 @@ function run(operations, options, exitWhenFinished) { // RENAME files
     };
   }
   let completedOps = [];
-  _.forEach(operations, function(operation) {
+  operations.forEach(function(operation) {
     if (!options.force && operation.original.toLowerCase() !== operation.output.toLowerCase() && pathExists.sync(operation.output)) {
       if (options.keep) {
         operation = keepFiles(operation);
@@ -193,7 +137,8 @@ function run(operations, options, exitWhenFinished) { // RENAME files
 function getReplacementsList() { // GET LIST OF REPLACEMENT VARIABLES
   let descIndex = 16;
   let returnText = '';
-  _.forEach(REPLACEMENTS, function(value, key) {
+  Object.keys(REPLACEMENTS).forEach(function(key) {
+    let value = REPLACEMENTS[key];
     let spaces = (descIndex - key.length - 4 > 0 ? descIndex - key.length - 4 : 1);
     returnText += ' {{' + key + '}}' + ' '.repeat(spaces) + value.name + ': ' + value.description + '\n';
     if (value.parameters) {
@@ -211,7 +156,7 @@ function undoRename() { // UNDO PREVIOUS RENAME
   fs.readJSON(UNDO_FILE, (err, packageObj) => {
     if (err) throw err;
     let ops = [];
-    _.forEach(packageObj, function(value) {
+    packageObj.forEach(function(value) {
       [value.original, value.output] = [value.output, value.original];
       ops.push(value);
     });
@@ -247,6 +192,83 @@ function keepFiles(operation) {
   operation.text = operation.text.split(' → ')[0] + ' → ' + newFileName;
   operation.output = newFilePath;
   return operation;
+}
+
+function buildFileIndex(files, newFileName) {
+  let fileIndex = {};
+  if (newFileName.ext) {
+    fileIndex[newFileName.ext] = {
+      index: 1,
+      total: files.length
+    };
+  } else {
+    files.forEach(function(value) {
+      let fileObj = path.parse(path.resolve(value));
+      if (fileIndex[fileObj.ext]) {
+        fileIndex[fileObj.ext].total += 1;
+      } else {
+        fileIndex[fileObj.ext] = {
+          index: 1,
+          total: 1
+        };
+      }
+    });
+  }
+  return fileIndex;
+}
+
+function regexMatch(fileObj, options) {
+  let pattern;
+  try {
+    pattern = new RegExp(options.regex.replace(/\(\?\<\w+\>/g, '('), 'g');
+  } catch (err) {
+    console.log(err.message);
+    process.exit(1);
+  }
+  fileObj.regexPattern = pattern;
+  fileObj.regexMatches = fileObj.name.match(pattern);
+
+  return fileObj;
+}
+
+function regexGroupReplacement(fileObj, options) {
+  let groupNames = options.regex.match(/\<[A-Za-z]+\>/g);
+  if (groupNames !== null) {
+    let re = namedRegexp(options.regex);
+    let reGroups = re.execGroups(fileObj.name);
+    groupNames.forEach(function(value) {
+      let g = value.replace(/\W/g, '');
+      if (reGroups && reGroups[g]) {
+        fileObj.newName = fileObj.newName.replace('{{' + g + '}}', reGroups[g]);
+      } else {
+        fileObj.newName = fileObj.newName.replace('{{' + g + '}}', '');
+      }
+    });
+  }
+
+  return fileObj;
+}
+
+function replaceVariables(fileObj, uniqueName) {
+  let repSearch = /\{{2}([\w]+?)\}{2}|\{{2}([\w]+?)\|(.*?)\}{2}/;
+  let repResult = repSearch.exec(fileObj.newName);
+  while (repResult !== null) {
+    let repVar = repResult[1] || repResult[2];
+    if (Object.keys(REPLACEMENTS).indexOf(repVar) > -1) {
+      let repObj = REPLACEMENTS[repVar];
+      let defaultArg = (repObj.parameters && repObj.parameters.default ? repObj.parameters.default : '');
+      let repArg = (repResult[3] ? repResult[3] : defaultArg);
+      fileObj.newName = fileObj.newName.replace(repResult[0], repObj.function(fileObj, repArg));
+      if (repObj.unique) {
+        uniqueName = true;
+      }
+    } else {
+      throw 'InvalidReplacementVariable';
+    }
+    repResult = repSearch.exec(fileObj.newName);
+  }
+
+  return [fileObj, uniqueName];
 }
 
 module.exports = {

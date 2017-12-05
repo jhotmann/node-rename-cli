@@ -118,7 +118,6 @@ Whenever you run rename for the first time a file ```~/.rename/replacements.js``
 - globby https://github.com/sindresorhus/globby
 - fs-extra https://github.com/jprichardson/node-fs-extra
 - prompt-sync https://github.com/0x00A/prompt-sync
-- lodash https://lodash.com/
 - node-dateformat https://github.com/felixge/node-dateformat
 - named-js-regexp https://github.com/edvinv/named-js-regexp
 - num2fraction https://github.com/yisibl/num2fraction
