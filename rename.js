@@ -166,7 +166,11 @@ function undoRename() { // UNDO PREVIOUS RENAME
 
 function renameFile(oldName, newName) { // rename the file
   try {
-    fs.renameSync(oldName, newName);
+    if (pathExists.sync(oldName)) {
+      fs.renameSync(oldName, newName);
+    } else {
+      console.log(oldName + ' does not exist! Operation skipped.');
+    }
   } catch (e) {
     throw(e);
   }

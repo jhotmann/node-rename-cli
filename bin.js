@@ -14,7 +14,7 @@ process.stdout.on('error', epipeError);
 
 const chalk = require('chalk');
 const fs = require('fs-extra');
-const index = require('./index');
+const rename = require('./rename');
 const opn = require('opn');
 const os = require('os');
 const path = require('path');
@@ -25,7 +25,7 @@ const argv = yargs
     .usage('Rename-CLI v' + require('./package.json').version + '\n\nUsage:\n\n  rename [options] file(s) new-file-name')
     .options(require('./lib/yargsOptions'))
     .help('help')
-    .epilogue('Variables:\n\n' + index.getReplacementsList())
+    .epilogue('Variables:\n\n' + rename.getReplacementsList())
     .wrap(yargs.terminalWidth())
     .argv;
 
@@ -59,13 +59,13 @@ function parseArgs() {
       process.exit(0);
     }
   } else if (argv.u) { // undo previous rename
-    index.undoRename();
+    rename.undoRename();
   } else if (argv.w) { // launch the wizard
     require('./lib/wizard')();
   } else if (argv._.length > 1) { // proceed to do the rename
     renameFiles();
   } else if (argv._.length === 0 && !compiled) {
-    require('./lib/rename');
+    require('./lib/ui');
   } else {
     console.log('ERROR: Not enough arguments specified. Type rename -h for help');
     process.exit(1);
@@ -74,10 +74,10 @@ function parseArgs() {
 
 function renameFiles() {
   let newFileName = path.parse(argv._.pop());
-  let files = index.getFileArray(argv._);
-  let options = index.argvToOptions(argv);
-  let operations = index.getOperations(files, newFileName, options);
-  let hasConflicts = index.hasConflicts(operations);
+  let files = rename.getFileArray(argv._);
+  let options = rename.argvToOptions(argv);
+  let operations = rename.getOperations(files, newFileName, options);
+  let hasConflicts = rename.hasConflicts(operations);
   
   // Print off renames if simulated or verbose options used, or warn if there are file
   // conflicts and the force option isn't used.
@@ -117,10 +117,10 @@ function renameFiles() {
       }
       let conflictPrompt = prompt('Would you like to proceed? (y/n) ');
       if (conflictPrompt === 'y') {
-        index.run(operations, options);
+        rename.run(operations, options);
       }
     }
   } else {
-    index.run(operations, options);
+    rename.run(operations, options);
   }
 }

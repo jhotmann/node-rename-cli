@@ -2,7 +2,7 @@
   "name": "rename-cli",
   "version": "5.0.1",
   "description": "A command line utility for renaming files",
-  "main": "index.js",
+  "main": "rename.js",
   "preferGlobal": true,
   "bin": {
     "rename": "./bin.js",
