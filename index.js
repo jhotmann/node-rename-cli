@@ -99,7 +99,7 @@ function getOperations(files, newFileName, options) {
     }
 
     // APPEND INDEX if output file names are not unique
-    if (!uniqueName && !options.noIndex) {
+    if (!uniqueName && !options.noIndex && fileIndex[fileObj.ext].total > 1) {
       fileObj.newName = fileObj.newName + REPLACEMENTS.i.function(fileObj, '1');
     }
 
@@ -212,10 +212,7 @@ function undoRename() { // UNDO PREVIOUS RENAME
     if (err) throw err;
     let ops = [];
     _.forEach(packageObj, function(value) {
-      let og = value.output;
-      let out = value.original;
-      value.output = out;
-      value.original = og;
+      [value.original, value.output] = [value.output, value.original];
       ops.push(value);
     });
     run(ops);
