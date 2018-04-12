@@ -71,7 +71,7 @@ function getOperations(files, newFileName, options) {
 
 function argvToOptions(argv) {
   return {
-    regex: (argv.r ? argv.r : false),
+    regex: (argv.r ? (Array.isArray(argv.r) ? argv.r : [argv.r]) : false),
     keep: (argv.k ? true : false),
     force: (argv.f ? true : false),
     simulate: (argv.s ? true : false),
@@ -223,32 +223,40 @@ function buildFileIndex(files, newFileName) {
 
 function regexMatch(fileObj, options) {
   let pattern;
-  try {
-    pattern = new RegExp(options.regex.replace(/\(\?\<\w+\>/g, '('), 'g');
-  } catch (err) {
-    console.log(err.message);
-    process.exit(1);
-  }
-  fileObj.regexPattern = pattern;
-  fileObj.regexMatches = fileObj.name.match(pattern);
+  let patterns = [];
+  let matches = [];
+  options.regex.forEach((regex) => {
+    try {
+      pattern = new RegExp(regex.replace(/\(\?\<\w+\>/g, '('), 'g');
+    } catch (err) {
+      console.log(err.message);
+      process.exit(1);
+    }
+    matches = matches.concat(fileObj.name.match(pattern));
+    patterns.push(pattern);
+  });
+  fileObj.regexPatterns = patterns;
+  fileObj.regexMatches = matches;
 
   return fileObj;
 }
 
 function regexGroupReplacement(fileObj, options) {
-  let groupNames = options.regex.match(/\<[A-Za-z]+\>/g);
-  if (groupNames !== null) {
-    let re = namedRegexp(options.regex);
-    let reGroups = re.execGroups(fileObj.name);
-    groupNames.forEach(function(value) {
-      let g = value.replace(/\W/g, '');
-      if (reGroups && reGroups[g]) {
-        fileObj.newName = fileObj.newName.replace('{{' + g + '}}', reGroups[g]);
-      } else {
-        fileObj.newName = fileObj.newName.replace('{{' + g + '}}', '');
-      }
-    });
-  }
+  options.regex.forEach((regex) => {
+    let groupNames = regex.match(/\<[A-Za-z]+\>/g);
+    if (groupNames !== null) {
+      let re = namedRegexp(regex);
+      let reGroups = re.execGroups(fileObj.name);
+      groupNames.forEach(function(value) {
+        let g = value.replace(/\W/g, '');
+        if (reGroups && reGroups[g]) {
+          fileObj.newName = fileObj.newName.replace('{{' + g + '}}', reGroups[g]);
+        } else {
+          fileObj.newName = fileObj.newName.replace('{{' + g + '}}', '');
+        }
+      });
+    }
+  });
 
   return fileObj;
 }

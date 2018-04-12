@@ -38,7 +38,7 @@ The new file name can contain any number of variables that will be replaced with
 
  ```{{i}}``` Index: The index of the file when renaming multiple files. Parameters: starting index, default is 1.    
  ```{{f}}``` File name: The original name of the file. Parameters: upper, lower, camel, pascal, or none for unmodified.    
- ```{{r}}``` RegEx First: The first match of the RegEx pattern specified in -r "...".    
+ ```{{r}}``` RegEx: The match of the RegEx pattern(s) specified in -r "...". Parameters: the index of the regex match, default is 0.    
  ```{{ra}}``` RegEx All: All matches of the RegEx pattern specified in -r "...". Parameters: separator character(s), default is none.  
  ```{{rn}}``` RegEx Not: Everything except for the matches of the RegEx pattern specified in -r "...". Parameters: replacement character(s), default is none    
  ```{{p}}``` Parent directory: The name of the parent directory. Parameters: upper, lower, camel, pascal, or none for unmodified.    
@@ -51,6 +51,8 @@ The new file name can contain any number of variables that will be replaced with
  ```{{efnum}}``` Exif FNumber: Photo FNumber value.    
  ```{{eex}}``` Exif Exposure Time: Photo exposure time value.    
  ```{{ed}}``` Exif Date: The date/time photo was taken. Parameters: date format, default is yyyymmdd.    
+ ```{{eh}}``` Exif Height: The height in pixels of the photo
+ ```{{ew}}``` Exif Width: The width in pixels of the photo
 
 ### RegEx
 When you specify a RegEx pattern with the -r option, the regular expression will be run against the original file name and the first match will be used to replace {{r}} in the output file name. You can also use {{ra}} in the output file name to keep all matches separated by a string you supply as an argument (or no argument to just append all matches together). If the regular expression fails to match, an empty string will be returned. **DO NOT** include the forward slashes in your RegEx pattern.
@@ -89,11 +91,18 @@ When you specify a RegEx pattern with the -r option, the regular expression will
       ExpenseReport - October 2015.pdf → 2015 - October Expense Report.pdf
     ```
 
-1. Use all RegEx matches in the output file name separated by a space. RegEx explaination: ```\w+``` captures a string of 1 or more word characters (A-Z, a-z, and _), ```(?=.+\d{4})``` is a forward lookahead for a number of 4 digits (this means it will only find words before the number), and then ```|``` or, ```\d{4}``` a number of 4 digits.
+1. Use all RegEx matches in the output file name separated by a space. RegEx explaination: ```\w+``` captures a string of 1 or more word characters (A-Z, a-z, and _), ```(?=.+\d{4})``` is a forward lookahead for a number of 4 digits (this means it will only find words before the number), and then ```|``` which means 'or', and finally ```\d{4}``` a number of 4 digits.
 
     ```sh
     rename -r "\w+(?=.+\d{4})|\d{4}" My.File.With.Periods.2016.more.info.txt "{{ra| }}"
       My.File.With.Periods.2016.more.info.txt → My File With Periods 2016.txt
+    ```
+
+1. Use multiple RegEx options with `{{rn}}` to filter out different parts of the input file name in order. RegEx and parameter explaination: first .2016. and all following characters are replaced due to the first RegEx rule `-r "\.\d{4}\..+"`, then we match just the year with the second RegEx rule for use later with `{{r|1}}`, and then all periods are replaced due to the third RegEx rule. Finally we add back the year inside parenthesis. Since JavaScript uses 0 as the first index of an array, 1 finds the second regex match which is just the year as specified by ` -r "\d{4}"`.
+
+    ```sh
+    rename  -r "\.\d{4}\..+" -r "\d{4}" -r "\." My.File.With.Periods.2016.more.info.txt "{{rn| }}({{r|1}})"
+      My.File.With.Periods.2016.more.info.txt → My File With Periods (2016).txt
     ```
 
 1. Extract Exif data from jpg images.
