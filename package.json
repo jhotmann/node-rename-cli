@@ -1,6 +1,6 @@
 {
   "name": "rename-cli",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "A command line utility for renaming files",
   "main": "rename.js",
   "preferGlobal": true,
@@ -24,7 +24,7 @@
     "cli-clear": "^1.0.4",
     "clipboardy": "^1.2.3",
     "dateformat": "^2.2.0",
-    "fs-extra": "^2.0.0",
+    "fs-extra": "^6.0.1",
     "globby": "^6.1.0",
     "inquirer": "^3.3.0",
     "jpeg-exif": "^1.0.6",
