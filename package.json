@@ -1,6 +1,6 @@
 {
   "name": "rename-cli",
-  "version": "5.1.2",
+  "version": "5.2.0",
   "description": "A command line utility for renaming files",
   "main": "rename.js",
   "preferGlobal": true,

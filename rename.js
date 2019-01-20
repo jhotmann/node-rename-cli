@@ -32,6 +32,7 @@ function getOperations(files, newFileName, options) {
     fileObj.newNameExt = (newFileName.ext ? newFileName.ext : fileObj.ext);
     fileObj.index = fileIndex[fileObj.newNameExt].index;
     fileObj.totalFiles = fileIndex[fileObj.newNameExt].total;
+    fileObj.options = options;
 
     // REGEX match and group replacement
     if (options.regex) {
@@ -262,7 +263,7 @@ function regexGroupReplacement(fileObj, options) {
 }
 
 function replaceVariables(fileObj, uniqueName) {
-  let repSearch = /\{{2}([\w]+?)\}{2}|\{{2}([\w]+?)\|(.*?)\}{2}/;
+  let repSearch = /\{{2}([\w]+?)\}{2}|\{{2}([\w]+?)\|\|?(.*?)\}{2}/;
   let repResult = repSearch.exec(fileObj.newName);
   while (repResult !== null) {
     let repVar = repResult[1] || repResult[2];
