@@ -263,7 +263,7 @@ function regexGroupReplacement(fileObj, options) {
 }
 
 function replaceVariables(fileObj, uniqueName) {
-  let repSearch = /\{{2}([\w]+?)\}{2}|\{{2}([\w]+?)\|\|?(.*?)\}{2}/;
+  let repSearch = /\{{2}([^\|]+?)\}{2}|\{{2}([\w]+?)\|{1,2}(.*?)\}{2}/;
   let repResult = repSearch.exec(fileObj.newName);
   while (repResult !== null) {
     let repVar = repResult[1] || repResult[2];
