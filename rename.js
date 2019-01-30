@@ -20,6 +20,12 @@ const REPLACEMENTS = Object.assign(defaultReplacements, userReplacements);
 function getOperations(files, newFileName, options) {
   let operations = [];
 
+  // Periods inside of replacement variables can be counted as file extensions, we don't want that
+  if (newFileName.ext.indexOf('}}') > -1) {
+    newFileName.name = newFileName.base;
+    newFileName.ext = '';
+  }
+
   // BUILD FILE INDICIES by file extension
   let fileIndex = buildFileIndex(files, newFileName);
   
@@ -59,10 +65,11 @@ function getOperations(files, newFileName, options) {
     let outputFileName = path.format({dir: fileObj.dir, base: fileObj.newName + fileObj.newNameExt});
     let conflict = (operations.find(function(o) { return o.output === outputFileName; }) ? true : false);
     let alreadyExists = false;
+    let depreciationMessages = fileObj.depreciationMessages;
     if (originalFileName.toLowerCase() !== outputFileName.toLowerCase()) {
       alreadyExists = pathExists.sync(outputFileName);
     }
-    operations.push({text: operationText, original: originalFileName, output: outputFileName, conflict: conflict, alreadyExists: alreadyExists});
+    operations.push({text: operationText, original: originalFileName, output: outputFileName, conflict: conflict, alreadyExists: alreadyExists, depreciationMessages: depreciationMessages});
 
     fileIndex[fileObj.newNameExt].index += 1;
   });
@@ -141,7 +148,8 @@ function run(operations, options, exitWhenFinished) { // RENAME files
 function getReplacementsList() { // GET LIST OF REPLACEMENT VARIABLES
   let descIndex = 16;
   let returnText = '';
-  Object.keys(REPLACEMENTS).forEach(function(key) {
+  // filter out depreciated replacement variables
+  Object.keys(REPLACEMENTS).filter(r => { return REPLACEMENTS[r].depreciated === true ? false : true; }).forEach(function(key) {
     let value = REPLACEMENTS[key];
     let spaces = (descIndex - key.length - 4 > 0 ? descIndex - key.length - 4 : 1);
     returnText += ' {{' + key + '}}' + ' '.repeat(spaces) + value.name + ': ' + value.description + '\n';
@@ -169,6 +177,8 @@ function undoRename() { // UNDO PREVIOUS RENAME
 }
 
 function renameFile(oldName, newName) { // rename the file
+  oldName = oldName.replace(/\\\[/g, '[').replace(/\\\]/g, ']');
+  newName = newName.replace(/\\\[/g, '[').replace(/\\\]/g, ']');
   try {
     if (pathExists.sync(oldName)) {
       fs.renameSync(oldName, newName);
@@ -266,23 +276,27 @@ function regexGroupReplacement(fileObj, options) {
 }
 
 function replaceVariables(fileObj, uniqueName) {
-  // TODO find a way to nest replacement variables
-  let repSearch = /\{{2}([^\|]+?)\}{2}|\{{2}([\w]+?)\|{1,2}(.*?\}*)\}{2}/;
-  let repResult = repSearch.exec(fileObj.newName);
-  while (repResult !== null) {
-    let repVar = repResult[1] || repResult[2];
+  while (fileObj.newName.indexOf('{{') > -1) {
+    let start = fileObj.newName.lastIndexOf('{{') + 2;
+    let end = fileObj.newName.indexOf('}}', start);
+    let repResult = fileObj.newName.substring(start, end);
+    let repArr = repResult.split('|');
+    let repVar = repArr[0];
     if (Object.keys(REPLACEMENTS).indexOf(repVar) > -1) {
       let repObj = REPLACEMENTS[repVar];
       let defaultArg = (repObj.parameters && repObj.parameters.default ? repObj.parameters.default : '');
-      let repArg = (repResult[3] ? repResult[3] : defaultArg);
-      fileObj.newName = fileObj.newName.replace(repResult[0], repObj.function(fileObj, repArg));
+      let repArg = repArr.slice(1).join('|').replace(/^\|+/, '');
+      fileObj.newName = fileObj.newName.replace('{{' + repResult + '}}', repObj.function(fileObj, repArg || defaultArg));
       if (repObj.unique) {
         uniqueName = true;
+      }
+      if (repObj.depreciated === true) {
+        if (fileObj.depreciationMessages === undefined) fileObj.depreciationMessages = [];
+        fileObj.depreciationMessages.push('Variable {{' + repVar + '}} is depreciated' + (repObj.depreciationMessage ? ', ' + repObj.depreciationMessage : '') + '.');
       }
     } else {
       throw 'InvalidReplacementVariable';
     }
-    repResult = repSearch.exec(fileObj.newName);
   }
 
   return [fileObj, uniqueName];

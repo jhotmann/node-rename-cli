@@ -79,6 +79,11 @@ function renameFiles() {
   let operations = rename.getOperations(files, newFileName, options);
   let hasConflicts = rename.hasConflicts(operations);
   
+  // Warn if any replacement variables are being depreciated
+  let depreciationMessages = [];
+  operations.filter(o => { return o.depreciationMessages; }).forEach(o => { o.depreciationMessages.forEach(m => { if (depreciationMessages.indexOf(m) === -1) depreciationMessages.push(m); }); });
+  if (depreciationMessages && depreciationMessages.length > 0) depreciationMessages.forEach(m => { console.log(chalk.yellow(m)); });
+  
   // Print off renames if simulated or verbose options used, or warn if there are file
   // conflicts and the force option isn't used.
   if (options.simulate || options.verbose || (!options.force && !options.keep && hasConflicts)) {
