@@ -36,26 +36,22 @@ The new file name does not need to contain a file extension. If you do not speci
 ### Variables
 The new file name can contain any number of variables that will be replaced with their value. Some variables can take parameters and will be indicated in their description. To pass a parameter to a variable, just use the variable name followed by a pipe and the parameter. **The output file name must be surrounded by quotes when using parameters.** See the first example below for how to use parameters.    
 
- ```{{i}}``` Index: The index of the file when renaming multiple files. Parameters: starting index, default is 1.    
- ```{{f}}``` File name: The original name of the file. Parameters: upper, lower, camel, pascal, or none for unmodified.    
- ```{{r}}``` RegEx: The match of the RegEx pattern(s) specified in -r "...". Parameters: the index of the regex match, default is 0.    
- ```{{ra}}``` RegEx All: All matches of the RegEx pattern specified in -r "...". Parameters: separator character(s), default is none.  
- ```{{rn}}``` RegEx Not: Everything except for the matches of the RegEx pattern specified in -r "...". Parameters: replacement character(s), default is none    
- ```{{p}}``` Parent directory: The name of the parent directory. Parameters: upper, lower, camel, pascal, or none for unmodified.    
- ```{{d}}``` Date: The current date/time. Parameters: date format, default is yyyymmdd.    
- ```{{cd}}``` Create date: The date/time the file was created. Parameters: date format, default is yyyymmdd.    
- ```{{md}}``` Modified date: The date/time the file was modified. Parameters: date format, default is yyyymmdd.    
- ```{{ad}}``` Accessed date: The date/time the file was accessed. Parameters: date format, default is yyyymmdd.    
- ```{{g}}``` GUID: A globally unique identifier. Parameters: pattern using x's which will be replaced as random 16bit characters and y's which will be replaced with a, b, 8, or 9. Default is xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx    
- ```{{eiso}}``` Exif ISO: Photo ISO value.    
- ```{{efnum}}``` Exif FNumber: Photo FNumber value.    
- ```{{eex}}``` Exif Exposure Time: Photo exposure time value.    
- ```{{ed}}``` Exif Date: The date/time photo was taken. Parameters: date format, default is yyyymmdd.    
- ```{{eh}}``` Exif Height: The height in pixels of the photo
- ```{{ew}}``` Exif Width: The width in pixels of the photo
+ `{{i}}` Index: The index of the file when renaming multiple files. Parameters: starting index, default is `1`: `{{i|starting index}}`    
+ `{{f}}` File name: The original name of the file. Parameters: `upper`, `lower`, `camel`, `pascal`, or none for unmodified: `{{f|modifier}}`    
+ `{{replace}}` Replace: Replace one string in the original file name with another. Parameters: The string to search for and the string to replace it with: `{{replace|foo|bar}}`    
+ `{{r}}` RegEx: The specified match of the RegEx pattern(s) specified in -r. Parameters: the number of the regex match, default is `0`: `{{r|match number}}`    
+ `{{ra}}` RegEx All: All matches of the RegEx pattern specified in -r. Parameters: separator character(s), default is none: `{{ra|separator}}`  
+ `{{rn}}` RegEx Not: Everything but the matches of the RegEx pattern specified in -r. Parameters: replacement character(s), default is none: `{{rn|separator}}`    
+ `{{regex}}` RegEx v2: The match(es) of the RegEx pattern specified. Parameters: the regular expression, optional flags, and the number of the regex match or the joiner for all matches: `{{regex||regular expression||flags||number or joiner}}`    
+ `{{p}}` Parent directory: The name of the parent directory. Parameters: `upper`, `lower`, `camel`, `pascal`, or none for unmodified: `{{p|modifier}}`    
+ `{{date}}` Dates: Insert a date in a specific format. Parameters: the first parameter should be one of the following: `c[urrent]`, `cr[eate]`, `m[odify]`, or `a[ccess]`, and the second parameter is the date format which defaults to `yyyymmdd`: `{{date|type|format}}`    
+ `{{g}}` GUID: A globally unique identifier. Parameters: pattern using x's which will be replaced as random 16bit characters and y's which will be replaced with a, b, 8, or 9. Default is `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`: `{{g}}`    
+ `{{exif}}` Exif Information: Photo Exif Information. Parameters: the first parameter should be one of the following: i[so], f[num], e[xposure], d[ate], h[eight], or w[idth]. If the first parameter is d[ate], then also include another parameter for the date format: `{{exif|property|date format}}`    
 
 ### RegEx
-When you specify a RegEx pattern with the -r option, the regular expression will be run against the original file name and the first match will be used to replace {{r}} in the output file name. You can also use {{ra}} in the output file name to keep all matches separated by a string you supply as an argument (or no argument to just append all matches together). If the regular expression fails to match, an empty string will be returned. **DO NOT** include the forward slashes in your RegEx pattern.
+As of version `5.2.0` a new way of using regular expressions has been added. You can now simply add a `{{regex}}` replacement variable in the output file name to include the result(s) of the specified regular expression on the original file name.
+
+Old method: When you specify a RegEx pattern with the -r option, the regular expression will be run against the original file name and the first match will be used to replace {{r}} in the output file name. You can also use {{ra}} in the output file name to keep all matches separated by a string you supply as an argument (or no argument to just append all matches together). If the regular expression fails to match, an empty string will be returned. **DO NOT** include the forward slashes in your RegEx pattern.
 
  Regex Replace:    
  You can write RegEx to replace characters you don't want. To do this, use a RegEx pattern to match things you want to remove like ```\s``` and for your output file name use ```"{{rn|-}}``` with the characters you want to use as replacements after the pipe.  In this example, all spaces will be replaced by dashes, so if you had a file named ```My Text File.txt``` it would become ```My-Text-File.txt```. Or if you want to replace a specific word you could do something like the following: ```-r "Text"``` with the output file name ```"{{rn|Log}}"``` and your new file name would be ```My Log File.txt```. If you want to easily replace all characters that aren't a letter, number, or underscore use ```\W``` (yes, that's a capital W) as your RegEx pattern.
@@ -68,13 +64,13 @@ When you specify a RegEx pattern with the -r option, the regular expression will
 1. Prepend date to file name. Date formatting options can be found [here](https://github.com/felixge/node-dateformat#mask-options).
 
     ```sh
-    rename *.log "{{d|yyyymmdd}}{{f}}"
+    rename *.log "{{date|current|yyyymmdd}}{{f}}"
       node.log → 20170303node.log
       system.log → 20170303system.log
     ```
-    ##### *Note: the default format for the date variable is yyyymmdd so in the above example you could just write ```rename *.log {{d}}{{f}}``` to achieve the same result. You can see default parameters for variables by typing ```rename -h```.*
+    ##### *Note: the default parameters for the date variable are current and yyyymmdd so in the above example you could just write ```rename *.log {{date}}{{f}}``` to achieve the same result. You can see default parameters for variables by typing ```rename -h```.*
 
-1. Rename all files the same and an index number will be appended. The index will be prepended with the correct number of zeroes to keep file order the same. For example, if you are renaming 150 files, the first index will be 001. You can change the starting index by adding the index variable with a parameter ```{{i|42}}``` If you don't want to include indexes use the ```-n``` option. You will be prompted for any file conflicts. Each file extension in a rename operation will have its own independent index.
+1. Rename all files the same and an index number will be appended. The index will be prepended with the correct number of zeroes to keep file order the same. For example, if you are renaming 150 files, the first index will be 001. You can change the starting index by adding the index variable with a parameter ```{{i|42}}``` If you don't want to include indexes use the ```-n``` option and you will be prompted for any file conflicts. Each file extension in a rename operation will have its own independent index.
 
     ```sh
     rename *.log test

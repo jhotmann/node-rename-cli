@@ -74,7 +74,7 @@ function parseArgs() {
 
 function renameFiles() {
   let newFileName = path.parse(argv._.pop());
-  let files = rename.getFileArray(argv._);
+  let files = rename.getFileArray(argv._).map(f => { return f.replace(/\\\[/g, '[').replace(/\\\]/g, ']'); });
   let options = rename.argvToOptions(argv);
   let operations = rename.getOperations(files, newFileName, options);
   let hasConflicts = rename.hasConflicts(operations);
