@@ -36,27 +36,37 @@ The new file name does not need to contain a file extension. If you do not speci
 ### Variables
 The new file name can contain any number of variables that will be replaced with their value. Some variables can take parameters and will be indicated in their description. To pass a parameter to a variable, just use the variable name followed by a pipe and the parameter. **The output file name must be surrounded by quotes when using parameters.** See the first example below for how to use parameters.    
 
- `{{i}}` Index: The index of the file when renaming multiple files. Parameters: starting index, default is `1`: `{{i|starting index}}`    
- `{{f}}` File name: The original name of the file. Parameters: `upper`, `lower`, `camel`, `pascal`, or none for unmodified: `{{f|modifier}}`    
- `{{replace}}` Replace: Replace one string in the original file name with another. Parameters: The string to search for and the string to replace it with: `{{replace|foo|bar}}`    
- `{{r}}` RegEx: The specified match of the RegEx pattern(s) specified in -r. Parameters: the number of the regex match, default is `0`: `{{r|match number}}`    
- `{{ra}}` RegEx All: All matches of the RegEx pattern specified in -r. Parameters: separator character(s), default is none: `{{ra|separator}}`  
- `{{rn}}` RegEx Not: Everything but the matches of the RegEx pattern specified in -r. Parameters: replacement character(s), default is none: `{{rn|separator}}`    
- `{{regex}}` RegEx v2: The match(es) of the RegEx pattern specified. Parameters: the regular expression, optional flags, and the number of the regex match or the joiner for all matches: `{{regex||regular expression||flags||number or joiner}}`    
- `{{p}}` Parent directory: The name of the parent directory. Parameters: `upper`, `lower`, `camel`, `pascal`, or none for unmodified: `{{p|modifier}}`    
- `{{date}}` Dates: Insert a date in a specific format. Parameters: the first parameter should be one of the following: `c[urrent]`, `cr[eate]`, `m[odify]`, or `a[ccess]`, and the second parameter is the date format which defaults to `yyyymmdd`: `{{date|type|format}}`    
- `{{g}}` GUID: A globally unique identifier. Parameters: pattern using x's which will be replaced as random 16bit characters and y's which will be replaced with a, b, 8, or 9. Default is `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`: `{{g}}`    
+ `{{i}}` Index: The index of the file when renaming multiple files. Parameters: starting index, default is `1`: `{{i|starting index}}`
+
+ `{{f}}` File name: The original name of the file. Parameters: Param 1: `upper`, `lower`, `camel`, `pascal`, blank for unmodified, or `replace`. If replace, then Param2: search string and Param3: replace string: `{{f|modifier}}` or `{{f|replace|search|replacement}}`
+
+ `{{p}}` Parent directory: The name of the parent directory. Parameters: Param 1: `upper`, `lower`, `camel`, `pascal`, blank for unmodified, or `replace`. If replace, then Param2: search string and Param3: replace string: `{{p|modifier}}` or `{{p|replace|search|replacement}}`
+
+ `{{replace}}` Replace: Replace one string in the original file name with another. Parameters: The string to start with, a string to search for, and a string to replace it with: `{{replace|SomeStringOrVariable|search|replacement}}`
+
+ `{{r}}` RegEx: The specified match of the RegEx pattern(s) specified in `-r`. Parameters: the number of the regex match, default is `0`: `{{r|match number}}`
+
+ `{{ra}}` RegEx All: All matches of the RegEx pattern specified in `-r`. Parameters: separator character(s), default is none: `{{ra|separator}}`
+
+ `{{rn}}` RegEx Not: Everything but the matches of the RegEx pattern specified in `-r`. Parameters: replacement character(s), default is none: `{{rn|separator}}`
+
+ `{{regex}}` RegEx v2: The match(es) of the RegEx pattern specified. Parameters: the regular expression, optional flags, and the number of the regex match or the joiner for all matches: `{{regex||regular expression||flags||number or joiner}}`
+
+ `{{date}}` Dates: Insert a date in a specific format. Parameters: the first parameter should be one of the following: `c[urrent]`, `cr[eate]`, `m[odify]`, or `a[ccess]`, and the second parameter is the date format which defaults to `yyyymmdd`: `{{date|type|format}}`
+
+ `{{g}}` GUID: A globally unique identifier. Parameters: pattern using x's which will be replaced as random 16bit characters and y's which will be replaced with a, b, 8, or 9. Default is `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`: `{{g}}`
+
  `{{exif}}` Exif Information: Photo Exif Information. Parameters: the first parameter should be one of the following: i[so], f[num], e[xposure], d[ate], h[eight], or w[idth]. If the first parameter is d[ate], then also include another parameter for the date format: `{{exif|property|date format}}`    
 
 ### RegEx
-As of version `5.2.0` a new way of using regular expressions has been added. You can now simply add a `{{regex}}` replacement variable in the output file name to include the result(s) of the specified regular expression on the original file name.
+As of version `6.0.0` a new way of using regular expressions has been added. You can now simply add a `{{regex||regular expression||flags||number or joiner}}` replacement variable in the output file name to include the result(s) of the specified regular expression on the original file name. No need to use the `-r` option and no need for forward slashes in your regular expression.
 
-Old method: When you specify a RegEx pattern with the -r option, the regular expression will be run against the original file name and the first match will be used to replace {{r}} in the output file name. You can also use {{ra}} in the output file name to keep all matches separated by a string you supply as an argument (or no argument to just append all matches together). If the regular expression fails to match, an empty string will be returned. **DO NOT** include the forward slashes in your RegEx pattern.
+*Old method*: When you specify a RegEx pattern with the `-r` option, the regular expression will be run against the original file name and the first match will be used to replace `{{r}}` in the output file name. You can also use `{{ra}}` in the output file name to keep all matches separated by a string you supply as an argument (or no argument to just append all matches together). If the regular expression fails to match, an empty string will be returned. **DO NOT** include the forward slashes in your RegEx pattern.
 
- Regex Replace:    
- You can write RegEx to replace characters you don't want. To do this, use a RegEx pattern to match things you want to remove like ```\s``` and for your output file name use ```"{{rn|-}}``` with the characters you want to use as replacements after the pipe.  In this example, all spaces will be replaced by dashes, so if you had a file named ```My Text File.txt``` it would become ```My-Text-File.txt```. Or if you want to replace a specific word you could do something like the following: ```-r "Text"``` with the output file name ```"{{rn|Log}}"``` and your new file name would be ```My Log File.txt```. If you want to easily replace all characters that aren't a letter, number, or underscore use ```\W``` (yes, that's a capital W) as your RegEx pattern.
+ **Regex Replace:**    
+ You can write RegEx to replace characters you don't want. Let's say you want to replace all spaces in a file name with a `-`. To do this, use an output file name like this: `{{regex||[^ ]+||g||-}}`. The regular expression `[^ ]+` will look for multiple non-space characters in a row and join them with a `-`.  With the new `replace` option for the `{{f}}` variable you can simplify your output file name by using use the following: `{{f|replace| |-}}`.  In both of these examples, all spaces will be replaced by dashes, so if you had a file named ```My Text File.txt``` it would become ```My-Text-File.txt```.
 
- Groups:    
+ **Groups:**    
  You can write RegEx to capture one or more named groups and then use those groups in your output file name. The groups should be written like: ```(?<GroupName>regular expression here)```. If the RegEx groups do not return a match, the replacement variables in the output file name will be blank, so be sure to test with the -s option. See the third example below for how to use RegEx groups.
 
 ## Examples
@@ -89,8 +99,19 @@ Old method: When you specify a RegEx pattern with the -r option, the regular exp
 
 1. Use all RegEx matches in the output file name separated by a space. RegEx explaination: ```\w+``` captures a string of 1 or more word characters (A-Z, a-z, and _), ```(?=.+\d{4})``` is a forward lookahead for a number of 4 digits (this means it will only find words before the number), and then ```|``` which means 'or', and finally ```\d{4}``` a number of 4 digits.
 
+    New Method:
+
+    ```sh
+    rename My.File.With.Periods.2016.more.info.txt "{{regex||\w+(?=.+\d{4})|\d{4}||g|| }}"
+
+      My.File.With.Periods.2016.more.info.txt → My File With Periods 2016.txt
+    ```
+
+    Old Method:
+
     ```sh
     rename -r "\w+(?=.+\d{4})|\d{4}" My.File.With.Periods.2016.more.info.txt "{{ra| }}"
+
       My.File.With.Periods.2016.more.info.txt → My File With Periods 2016.txt
     ```
 
@@ -104,7 +125,7 @@ Old method: When you specify a RegEx pattern with the -r option, the regular exp
 1. Extract Exif data from jpg images.
 
     ```sh
-    rename *.jpg "{{ed}}-NewYorkCity{{i}}-ISO{{eiso}}-f{{efnum}}-{{eex}}s"
+    rename *.jpg "{{exif|d}}-NewYorkCity{{i}}-ISO{{exif|iso}}-f{{exif|f}}-{{exif|e}}s"
       DSC_5621.jpg → 20150927-NewYorkCity1-ISO250-f5.6-10s.jpg
       DSC_5633.jpg → 20150928-NewYorkCity2-ISO125-f7.1-1/400s.jpg
       DSC_5889.jpg → 20150930-NewYorkCity3-ISO125-f4.5-1/200s.jpg
