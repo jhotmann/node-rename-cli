@@ -40,6 +40,11 @@ function getOperations(files, newFileName, options) {
     fileObj.totalFiles = fileIndex[fileObj.newNameExt].total;
     fileObj.options = options;
 
+    // IGNORE DIRECTORIES if --ignoredirectories specified
+    if (options.ignoreDirectories && fs.lstatSync(fullPath).isDirectory()) {
+      return;
+    }
+
     // REGEX match and group replacement
     if (options.regex) {
       fileObj = regexMatch(fileObj, options);
@@ -83,9 +88,11 @@ function argvToOptions(argv) {
     keep: (argv.k ? true : false),
     force: (argv.f ? true : false),
     simulate: (argv.s ? true : false),
+    prompt: (argv.p ? true: false),
     verbose: (argv.v ? true : false),
     noIndex: (argv.n ? true : false),
-    noTrim: (argv.notrim ? true : false)
+    noTrim: (argv.notrim ? true : false),
+    ignoreDirectories: (argv.d ? true : false)
   };
 }
 

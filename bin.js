@@ -84,12 +84,15 @@ function renameFiles() {
   operations.filter(o => { return o.depreciationMessages; }).forEach(o => { o.depreciationMessages.forEach(m => { if (depreciationMessages.indexOf(m) === -1) depreciationMessages.push(m); }); });
   if (depreciationMessages && depreciationMessages.length > 0) depreciationMessages.forEach(m => { console.log(chalk.yellow(m)); });
   
-  // Print off renames if simulated or verbose options used, or warn if there are file
+  // Print off renames if simulated, prompt, or verbose options used, or warn if there are file
   // conflicts and the force option isn't used.
-  if (options.simulate || options.verbose || (!options.force && !options.keep && hasConflicts)) {
+  if (options.simulate || options.prompt || options.verbose || (!options.force && !options.keep && hasConflicts)) {
     let conflicts = false;
     let existing = false;
     console.log('');
+    if (operations.length === 0 && options.verbose) {
+      console.log('No rename operations to execute');
+    }
     operations.forEach(function(value) {
       if (value.alreadyExists) {
         console.log(chalk.red(value.text));
@@ -116,7 +119,7 @@ function renameFiles() {
         console.log('');
       }
     }
-    if (!options.simulate && (existing || conflicts || options.verbose)) {
+    if (!options.simulate && (existing || conflicts || options.verbose || options.prompt)) {
       if (!hasConflicts) {
         console.log('');
       }
