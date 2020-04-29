@@ -65,9 +65,18 @@ function getOperations(files, newFileName, options) {
     }
 
     // ADD to operations
-    let operationText = fileObj.base + ' → ' + fileObj.newName + fileObj.newNameExt;
+    let operationText = path.format(fileObj).replace(process.cwd() + '/', '') + ' → ';
+    let newFileObj = { base: fileObj.newName + fileObj.newNameExt };
+    if (options.noMove) {
+      newFileObj.dir = fileObj.dir;
+      operationText += fileObj.newName + fileObj.newNameExt;
+    } else {
+      let newDirectory = replaceVariableString(newFileName.dir, fileObj);
+      newFileObj.dir = path.resolve(fileObj.dir, newDirectory);
+      operationText += path.format(newFileObj).replace(process.cwd() + '/', '');
+    }
     let originalFileName = path.format({dir: fileObj.dir, base: fileObj.base});
-    let outputFileName = path.format({dir: fileObj.dir, base: fileObj.newName + fileObj.newNameExt});
+    let outputFileName = path.format(newFileObj);
     let conflict = (operations.find(function(o) { return o.output === outputFileName; }) ? true : false);
     let alreadyExists = false;
     let depreciationMessages = fileObj.depreciationMessages;
@@ -92,7 +101,8 @@ function argvToOptions(argv) {
     verbose: (argv.v ? true : false),
     noIndex: (argv.n ? true : false),
     noTrim: (argv.notrim ? true : false),
-    ignoreDirectories: (argv.d ? true : false)
+    ignoreDirectories: (argv.d ? true : false),
+    noMove: (argv.nomove ? true : false)
   };
 }
 
@@ -307,6 +317,13 @@ function replaceVariables(fileObj, uniqueName) {
   }
 
   return [fileObj, uniqueName];
+}
+
+function replaceVariableString(input, fileObj, uniqueName) {
+  fileObj.newName = input;
+  if (uniqueName === undefined || uniqueName === null) uniqueName = true;
+  [fileObj, uniqueName] = replaceVariables(fileObj, uniqueName);
+  return fileObj.newName;
 }
 
 module.exports = {
