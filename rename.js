@@ -80,12 +80,12 @@ function getOperations(files, newFileName, options) {
     let conflict = (operations.find(function(o) { return o.output === outputFileName; }) ? true : false);
     let alreadyExists = false;
     let directoryExists = true;
-    let depreciationMessages = fileObj.depreciationMessages;
+    let deprecationMessages = fileObj.depreciationMessages;
     if (originalFileName.toLowerCase() !== outputFileName.toLowerCase()) {
       alreadyExists = pathExists.sync(outputFileName);
       directoryExists = pathExists.sync(newFileObj.dir);
     }
-    operations.push({text: operationText, original: originalFileName, output: outputFileName, conflict: conflict, alreadyExists: alreadyExists, directoryExists: directoryExists, depreciationMessages: depreciationMessages});
+    operations.push({text: operationText, original: originalFileName, output: outputFileName, conflict: conflict, alreadyExists: alreadyExists, directoryExists: directoryExists, deprecationMessages: deprecationMessages});
 
     fileIndex[fileObj.newNameExt].index += 1;
   });
@@ -113,7 +113,7 @@ function getFileArray(files) {
     return f.replace(/\[/g, '\\[').replace(/\]/g, '\\]');
   });
   if (globby.hasMagic(files)) {
-    files = globby.sync(files);
+    files = globby.sync(files, { onlyFiles: false });
   }
   return files;
 }
@@ -167,8 +167,8 @@ function run(operations, options, exitWhenFinished) { // RENAME files
 function getReplacementsList() { // GET LIST OF REPLACEMENT VARIABLES
   let descIndex = 16;
   let returnText = '';
-  // filter out depreciated replacement variables
-  Object.keys(REPLACEMENTS).filter(r => { return REPLACEMENTS[r].depreciated === true ? false : true; }).forEach(function(key) {
+  // filter out deprecated replacement variables
+  Object.keys(REPLACEMENTS).filter(r => { return REPLACEMENTS[r].deprecated === true ? false : true; }).forEach(function(key) {
     let value = REPLACEMENTS[key];
     let spaces = (descIndex - key.length - 4 > 0 ? descIndex - key.length - 4 : 1);
     returnText += ' {{' + key + '}}' + ' '.repeat(spaces) + value.name + ': ' + value.description + '\n';
@@ -309,9 +309,9 @@ function replaceVariables(fileObj, uniqueName) {
       if (repObj.unique) {
         uniqueName = true;
       }
-      if (repObj.depreciated === true) {
-        if (fileObj.depreciationMessages === undefined) fileObj.depreciationMessages = [];
-        fileObj.depreciationMessages.push('Variable {{' + repVar + '}} is depreciated' + (repObj.depreciationMessage ? ', ' + repObj.depreciationMessage : '') + '.');
+      if (repObj.deprecated === true) {
+        if (fileObj.deprecationMessages === undefined) fileObj.deprecationMessages = [];
+        fileObj.deprecationMessages.push('Variable {{' + repVar + '}} is deprecated' + (repObj.deprecationMessage ? ', ' + repObj.deprecationMessage : '') + '.');
       }
     } else {
       throw 'InvalidReplacementVariable';

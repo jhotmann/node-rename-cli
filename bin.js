@@ -79,10 +79,10 @@ function renameFiles() {
   let operations = rename.getOperations(files, newFileName, options);
   let hasConflicts = rename.hasConflicts(operations);
   
-  // Warn if any replacement variables are being depreciated
-  let depreciationMessages = [];
-  operations.filter(o => { return o.depreciationMessages; }).forEach(o => { o.depreciationMessages.forEach(m => { if (depreciationMessages.indexOf(m) === -1) depreciationMessages.push(m); }); });
-  if (depreciationMessages && depreciationMessages.length > 0) depreciationMessages.forEach(m => { console.log(chalk.yellow(m)); });
+  // Warn if any replacement variables are being deprecated
+  let deprecationMessages = [];
+  operations.filter(o => { return o.deprecationMessages; }).forEach(o => { o.deprecationMessages.forEach(m => { if (deprecationMessages.indexOf(m) === -1) deprecationMessages.push(m); }); });
+  if (deprecationMessages && deprecationMessages.length > 0) deprecationMessages.forEach(m => { console.log(chalk.yellow(m)); });
   
   // Print off renames if simulated, prompt, or verbose options used, or warn if there are file
   // conflicts and the force option isn't used.
