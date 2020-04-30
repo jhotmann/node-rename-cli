@@ -85,7 +85,15 @@ function getOperations(files, newFileName, options) {
       alreadyExists = pathExists.sync(outputFileName);
       directoryExists = pathExists.sync(newFileObj.dir);
     }
-    operations.push({text: operationText, original: originalFileName, output: outputFileName, conflict: conflict, alreadyExists: alreadyExists, directoryExists: directoryExists, deprecationMessages: deprecationMessages});
+    let operationObj = {text: operationText,
+      original: originalFileName,
+      output: outputFileName,
+      conflict: conflict,
+      alreadyExists: alreadyExists,
+      directoryExists: directoryExists,
+      deprecationMessages: deprecationMessages};
+    if (!directoryExists) operationObj.missingDirectory = newFileObj.dir;
+    operations.push(operationObj);
 
     fileIndex[fileObj.newNameExt].index += 1;
   });
@@ -94,7 +102,7 @@ function getOperations(files, newFileName, options) {
 }
 
 function argvToOptions(argv) {
-  return {
+  let options = {
     regex: (argv.r ? (Array.isArray(argv.r) ? argv.r : [argv.r]) : false),
     keep: (argv.k ? true : false),
     force: (argv.f ? true : false),
@@ -104,8 +112,11 @@ function argvToOptions(argv) {
     noIndex: (argv.n ? true : false),
     noTrim: (argv.notrim ? true : false),
     ignoreDirectories: (argv.d ? true : false),
-    noMove: (argv.nomove ? true : false)
+    noMove: (argv.nomove ? true : false),
+    createDirs: (argv.createdirs ? true : false)
   };
+  if (options.noMove && options.createDirs) options.createDirs = false;
+  return options;
 }
 
 function getFileArray(files) {
@@ -119,7 +130,11 @@ function getFileArray(files) {
 }
 
 function hasConflicts(operations) {
-  return (operations.find(function(o) { return (o.conflict === true || o.alreadyExists === true || o.directoryExists === false); }) ? true : false);
+  return (operations.find(function(o) { return (o.conflict === true || o.alreadyExists === true); }) ? true : false);
+}
+
+function hasMissingDirectories(operations) {
+  return (operations.find(function(o) { return (o.directoryExists === false); }) ? true : false);
 }
 
 function run(operations, options, exitWhenFinished) { // RENAME files
@@ -134,8 +149,9 @@ function run(operations, options, exitWhenFinished) { // RENAME files
     };
   }
   let completedOps = [];
+  let createdDirectories = [];
   operations.forEach(function(operation) {
-    if (!options.force && operation.original.toLowerCase() !== operation.output.toLowerCase() && pathExists.sync(operation.output)) {
+    if (!options.force && operation.original.toLowerCase() !== operation.output.toLowerCase() && pathExists.sync(operation.output)) { // If file already exists
       if (options.keep) {
         operation = keepFiles(operation);
         renameFile(operation.original, operation.output);
@@ -155,7 +171,24 @@ function run(operations, options, exitWhenFinished) { // RENAME files
           completedOps.push(operation);
         }
       }
-    } else {
+    } else if (!operation.directoryExists && operation.missingDirectory && operation.original.toLowerCase() !== operation.output.toLowerCase() && createdDirectories.indexOf(operation.missingDirectory) === -1) { // Directory doesn't exist
+      if (options.force || options.createDirs) {
+        fs.mkdirpSync(operation.missingDirectory);
+        renameFile(operation.original, operation.output);
+        completedOps.push(operation);
+      } else {
+        console.log('\n' + operation.text + '\n' + operation.missingDirectory + ' does not exist. What would you like to do?');
+        console.log('1) Create Directory');
+        console.log('2) Skip');
+        let response = prompt('Please input a number: ');
+        if (response === '1') {
+          createdDirectories.push(operation.missingDirectory);
+          fs.mkdirpSync(operation.missingDirectory);
+          renameFile(operation.original, operation.output);
+          completedOps.push(operation);
+        }
+      }
+    } else { // file doesn't already exist and directory exists
       renameFile(operation.original, operation.output);
       completedOps.push(operation);
     }
@@ -189,6 +222,7 @@ function undoRename() { // UNDO PREVIOUS RENAME
     let ops = [];
     packageObj.forEach(function(value) {
       [value.original, value.output] = [value.output, value.original];
+      value.directoryExists = true;
       ops.push(value);
     });
     run(ops);
@@ -334,6 +368,7 @@ module.exports = {
   run: run,
   getFileArray: getFileArray,
   hasConflicts: hasConflicts,
+  hasMissingDirectories: hasMissingDirectories,
   getReplacementsList: getReplacementsList,
   getReplacements: getReplacements,
   undoRename: undoRename

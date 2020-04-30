@@ -29,7 +29,7 @@ The new file name does not need to contain a file extension. If you do not speci
  ```-f```, ```--force```: Force overwrite without prompt when output file name already exists    
  ```-s```, ```--sim```: Simulate rename and just print new file names    
  ```-n```, ```--noindex```: Do not append an index when renaming multiple files. Use with caution.    
- ```-d```, ```--ignore-directories```: Do not rename directories    
+ ```-d```, ```--ignoredirectories```: Do not rename directories    
  ```-p```, ```--prompt```: Print all rename operations to be completed and confirm before proceeding    
  ```-v```, ```--verbose```: Print all rename operations to be completed and confirm before proceeding with bonus variable logging    
  ```--notrim```: Do not trim whitespace at beginning or end of ouput file name    

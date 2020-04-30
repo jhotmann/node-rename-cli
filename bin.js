@@ -76,8 +76,10 @@ function renameFiles() {
   let newFileName = path.parse(argv._.pop());
   let files = rename.getFileArray(argv._).map(f => { return f.replace(/\\\[/g, '[').replace(/\\\]/g, ']'); });
   let options = rename.argvToOptions(argv);
+  if (argv.nomove && argv.createdirs) console.log(chalk.yellow('WARNING: You passed both the --nomove and --createdirs options, --createdirs will be ignored'));
   let operations = rename.getOperations(files, newFileName, options);
   let hasConflicts = rename.hasConflicts(operations);
+  let hasMissingDirectories = rename.hasMissingDirectories(operations);
   
   // Warn if any replacement variables are being deprecated
   let deprecationMessages = [];
@@ -86,10 +88,11 @@ function renameFiles() {
   
   // Print off renames if simulated, prompt, or verbose options used, or warn if there are file
   // conflicts and the force option isn't used.
-  if (options.simulate || options.prompt || options.verbose || (!options.force && !options.keep && hasConflicts)) {
+  if (options.simulate || options.prompt || options.verbose || (!options.force && !options.keep && hasConflicts) || (!options.force && !options.createDirs && hasMissingDirectories)) {
     let conflicts = false;
     let existing = false;
     let missingDirectories = false;
+    let missingDirectoryPaths = [];
     console.log('');
     if (operations.length === 0 && options.verbose) {
       console.log('No rename operations to execute');
@@ -102,13 +105,18 @@ function renameFiles() {
         console.log(chalk.yellow(value.text));
         conflicts = true;
       } else if (!value.directoryExists) {
-        console.log(chalk.red(value.text));
-        missingDirectories = true;
+        if (options.force || options.createDirs) {
+          console.log(chalk.yellow(value.text));
+        } else {
+          console.log(chalk.red(value.text));
+          missingDirectories = true;
+        }
+        missingDirectoryPaths.push(value.missingDirectory);
       } else {
         console.log(value.text);
       }
     });
-    if (existing || conflicts || missingDirectories) {
+    if (existing || conflicts || missingDirectories || (options.verbose && hasMissingDirectories)) {
       console.log('');
     }
     if (existing) {
@@ -123,14 +131,20 @@ function renameFiles() {
         console.log('');
       }
     }
-    if (missingDirectories) {
-      console.log(chalk.red('WARNING: The directory doesn\'t exist'));
+    if (missingDirectories && !options.createDirs && !options.force) {
+      missingDirectoryPaths.filter(onlyUnique).forEach(p => console.log(chalk.red(`WARNING: The directory ${p} doesn't exist`)));
       if (!options.simulate && !options.force) {
         console.log('');
       }
     }
-    if (!options.simulate && (existing || conflicts || options.verbose || options.prompt)) {
-      if (!hasConflicts) {
+    if (hasMissingDirectories && (options.createDirs || options.force)) {
+      missingDirectoryPaths.filter(onlyUnique).forEach(p => console.log(chalk.yellow(`NOTE: The directory ${p} will be created`)));
+      if (!options.simulate && !options.force) {
+        console.log('');
+      }
+    }
+    if (!options.simulate && (existing || conflicts || missingDirectories || options.verbose || options.prompt)) {
+      if (!hasConflicts && !missingDirectories) {
         console.log('');
       }
       let conflictPrompt = prompt('Would you like to proceed? (y/n) ');
@@ -141,4 +155,8 @@ function renameFiles() {
   } else {
     rename.run(operations, options);
   }
+}
+
+function onlyUnique(value, index, self) { 
+  return self.indexOf(value) === index;
 }
