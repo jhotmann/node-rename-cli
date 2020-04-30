@@ -121,6 +121,7 @@ function argvToOptions(argv) {
 
 function getFileArray(files) {
   files = files.map(f => {
+    if (Number.isInteger(f)) f = '' + f;
     return f.replace(/\[/g, '\\[').replace(/\]/g, '\\]');
   });
   if (globby.hasMagic(files)) {
