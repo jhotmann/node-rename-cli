@@ -89,6 +89,7 @@ function renameFiles() {
   if (options.simulate || options.prompt || options.verbose || (!options.force && !options.keep && hasConflicts)) {
     let conflicts = false;
     let existing = false;
+    let missingDirectories = false;
     console.log('');
     if (operations.length === 0 && options.verbose) {
       console.log('No rename operations to execute');
@@ -100,11 +101,14 @@ function renameFiles() {
       } else if (value.conflict) {
         console.log(chalk.yellow(value.text));
         conflicts = true;
+      } else if (!value.directoryExists) {
+        console.log(chalk.red(value.text));
+        missingDirectories = true;
       } else {
         console.log(value.text);
       }
     });
-    if (existing || conflicts) {
+    if (existing || conflicts || missingDirectories) {
       console.log('');
     }
     if (existing) {
@@ -115,6 +119,12 @@ function renameFiles() {
     }
     if (conflicts) {
       console.log(chalk.yellow('WARNING: There are conflicting output file name(s)'));
+      if (!options.simulate && !options.force) {
+        console.log('');
+      }
+    }
+    if (missingDirectories) {
+      console.log(chalk.red('WARNING: The directory doesn\'t exist'));
       if (!options.simulate && !options.force) {
         console.log('');
       }

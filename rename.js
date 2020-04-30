@@ -79,11 +79,13 @@ function getOperations(files, newFileName, options) {
     let outputFileName = path.format(newFileObj);
     let conflict = (operations.find(function(o) { return o.output === outputFileName; }) ? true : false);
     let alreadyExists = false;
+    let directoryExists = true;
     let depreciationMessages = fileObj.depreciationMessages;
     if (originalFileName.toLowerCase() !== outputFileName.toLowerCase()) {
       alreadyExists = pathExists.sync(outputFileName);
+      directoryExists = pathExists.sync(newFileObj.dir);
     }
-    operations.push({text: operationText, original: originalFileName, output: outputFileName, conflict: conflict, alreadyExists: alreadyExists, depreciationMessages: depreciationMessages});
+    operations.push({text: operationText, original: originalFileName, output: outputFileName, conflict: conflict, alreadyExists: alreadyExists, directoryExists: directoryExists, depreciationMessages: depreciationMessages});
 
     fileIndex[fileObj.newNameExt].index += 1;
   });
@@ -117,7 +119,7 @@ function getFileArray(files) {
 }
 
 function hasConflicts(operations) {
-  return (operations.find(function(o) { return (o.conflict === true || o.alreadyExists === true); }) ? true : false);
+  return (operations.find(function(o) { return (o.conflict === true || o.alreadyExists === true || o.directoryExists === false); }) ? true : false);
 }
 
 function run(operations, options, exitWhenFinished) { // RENAME files
