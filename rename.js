@@ -65,7 +65,7 @@ function getOperations(files, newFileName, options) {
     }
 
     // ADD to operations
-    let operationText = path.format(fileObj).replace(process.cwd() + '/', '') + ' → ';
+    let operationText = path.format(fileObj).replace(process.cwd(), '').replace(/^[\\/]/, '') + ' → ';
     let newFileObj = { base: fileObj.newName + fileObj.newNameExt };
     if (options.noMove) {
       newFileObj.dir = fileObj.dir;
@@ -73,14 +73,14 @@ function getOperations(files, newFileName, options) {
     } else {
       let newDirectory = replaceVariableString(newFileName.dir, fileObj);
       newFileObj.dir = path.resolve(fileObj.dir, newDirectory);
-      operationText += path.format(newFileObj).replace(process.cwd() + '/', '');
+      operationText += path.format(newFileObj).replace(process.cwd(), '').replace(/^[\\/]/, '');
     }
     let originalFileName = path.format({dir: fileObj.dir, base: fileObj.base});
     let outputFileName = path.format(newFileObj);
     let conflict = (operations.find(function(o) { return o.output === outputFileName; }) ? true : false);
     let alreadyExists = false;
     let directoryExists = true;
-    let deprecationMessages = fileObj.depreciationMessages;
+    let deprecationMessages = fileObj.deprecationMessages;
     if (originalFileName.toLowerCase() !== outputFileName.toLowerCase()) {
       alreadyExists = pathExists.sync(outputFileName);
       directoryExists = pathExists.sync(newFileObj.dir);
