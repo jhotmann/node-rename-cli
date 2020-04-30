@@ -21,6 +21,7 @@ A cross-platform tool for renaming files quickly, especially multiple files at o
 The new file name does not need to contain a file extension. If you do not specifiy a file extension the original file extension will be preserved. *Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension.*
 
 ### Options
+ ```-h```, ```--help```: Show help    
  ```-i```, ```--info```: View online help    
  ```-w```, ```--wizard```: Run a wizard to guide you through renaming files    
  ```-u```, ```--undo```: Undo previous rename operation    
@@ -33,7 +34,8 @@ The new file name does not need to contain a file extension. If you do not speci
  ```-p```, ```--prompt```: Print all rename operations to be completed and confirm before proceeding    
  ```-v```, ```--verbose```: Print all rename operations to be completed and confirm before proceeding with bonus variable logging    
  ```--notrim```: Do not trim whitespace at beginning or end of ouput file name    
- ```-h```, ```--help```: Show help
+ ```--nomove ```: Do not move files if their new file name points to a different directory  
+ ```--createdirs```: Automatically create missing directories (cannot be used with `--nomove`)    
 
 ### Variables
 The new file name can contain any number of variables that will be replaced with their value. Some variables can take parameters and will be indicated in their description. To pass a parameter to a variable, just use the variable name followed by a pipe and the parameter. **The output file name must be surrounded by quotes when using parameters.** See the first example below for how to use parameters.    
