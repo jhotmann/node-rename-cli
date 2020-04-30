@@ -111,7 +111,7 @@ function getFileArray(files) {
     return f.replace(/\[/g, '\\[').replace(/\]/g, '\\]');
   });
   if (globby.hasMagic(files)) {
-    files = globby.sync(files);
+    files = globby.sync(files, { onlyFiles: false });
   }
   return files;
 }
