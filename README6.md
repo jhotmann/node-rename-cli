@@ -1,14 +1,12 @@
-# Rename-CLI
+# Rename-CLI v6
 A cross-platform tool for renaming files quickly, especially multiple files at once.
-
-*Note* Version 7 has big changes from version 6, if you are staying on version 6 you can find the old documentation [here](README6.md)
 
 ![gif preview](images/rename.gif)
 
 ## Features
 - Glob file matching
 - Undo previous rename
-- Variable replacement and filtering in output file name
+- Variable replacement in output file name
 - Ability to add your own variables
 - Auto-indexing when renaming multiple files
 - RegEx support for using part(s) of original file name

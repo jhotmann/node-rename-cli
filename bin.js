@@ -25,23 +25,39 @@ const argv = yargs
     .usage('Rename-CLI v' + require('./package.json').version + '\n\nUsage:\n\n  rename [options] file(s) new-file-name')
     .options(require('./lib/yargsOptions'))
     .help('help')
-    .epilogue('Variables:\n\n' + rename.getReplacementsList())
+    .epilogue('Variables:\n\n')// + rename.getReplacementsList())
     .wrap(yargs.terminalWidth())
     .argv;
 
-const userReplacements = os.homedir() + '/.rename/replacements.js';
 const compiled = (argv['$0'] && argv['$0'].indexOf('rname.exe') > -1);
 
-// check if ~/.rename/replacements.js exists, if not create it and
-// then copy in the text from ./userReplacements.js
-fs.ensureFile(userReplacements, err => {
+// create ~/.rename/userData.js if not exist
+const userData = os.homedir() + '/.rename/userData.js';
+fs.ensureFile(userData, err => {
   if (err) throw err;
-  fs.readFile(userReplacements, 'utf8', (er, data) => {
+  fs.readFile(userData, 'utf8', (er, data) => {
     if (er) throw er;
     if (data === '') {
-      fs.readFile(__dirname + '/lib/userReplacements.js', 'utf8', (ex, usrRep) => {
+      fs.readFile(__dirname + '/lib/userData.js', 'utf8', (ex, text) => {
         if (ex) throw ex;
-        fs.writeFile(userReplacements, usrRep, (e) => {
+        fs.writeFile(userData, text, (e) => {
+          if (e) throw e;
+        });
+      });
+    }
+  });
+});
+
+// create ~/.rename/userFilters.js if not exist
+const userFilters = os.homedir() + '/.rename/userFilters.js';
+fs.ensureFile(userFilters, err => {
+  if (err) throw err;
+  fs.readFile(userFilters, 'utf8', (er, data) => {
+    if (er) throw er;
+    if (data === '') {
+      fs.readFile(__dirname + '/lib/userFilters.js', 'utf8', (ex, text) => {
+        if (ex) throw ex;
+        fs.writeFile(userFilters, text, (e) => {
           if (e) throw e;
           parseArgs();
         });
@@ -77,7 +93,24 @@ function renameFiles() {
   let files = rename.getFileArray(argv._).map(f => { return f.replace(/\\\[/g, '[').replace(/\\\]/g, ']'); });
   let options = rename.argvToOptions(argv);
   if (argv.nomove && argv.createdirs) console.log(chalk.yellow('WARNING: You passed both the --nomove and --createdirs options, --createdirs will be ignored'));
-  let operations = rename.getOperations(files, newFileName, options);
+  let operations;
+  try {
+    operations = rename.getOperations(files, newFileName, options);
+  } catch (e) {
+    if (typeof e === 'string' && e.startsWith('Template render error')) {
+      let actualError = e.split('\n').length > 1 ? e.split('\n')[1].trim() : e;
+      let helpfulText = e.split('\n').length > 2 ? e.split('\n')[2].trim() : '';
+      console.log(chalk.red('Error generating output file name: ') + actualError);
+      let match = e.match('Line 1, Column (\\d+)');
+      if (match && helpfulText) {
+        let charNum = parseInt(match[1]) - 1;
+        console.log(helpfulText.substring(0,charNum) + chalk.red(helpfulText.charAt(charNum)) + helpfulText.substring(charNum + 1));
+      }
+    } else {
+      console.log(chalk.red("Error: " + e));
+    }
+    process.exit(1);
+  }
   let hasConflicts = rename.hasConflicts(operations);
   let hasMissingDirectories = rename.hasMissingDirectories(operations);
   

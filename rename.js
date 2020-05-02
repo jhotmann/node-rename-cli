@@ -1,77 +1,87 @@
 const fs = require('fs-extra');
 const globby = require("globby");
-const namedRegexp = require("named-js-regexp");
+const nunjucks = require('nunjucks');
 const os = require('os');
 const path = require('path');
 const pathExists = require('path-exists');
 const prompt = require('prompt-sync')();
-const defaultReplacements = require('./lib/replacements');
+const defaultData = require('./lib/data');
 
-let userReplacements;
-if (pathExists.sync(os.homedir() + '/.rename/replacements.js')) {
-  userReplacements = require(os.homedir() + '/.rename/replacements.js');
+let env = nunjucks.configure({ autoescape: true, noCache: true });
+const dateFilter = require('./lib/filters/date');
+const customFilters = require('./lib/filters/custom');
+env.addFilter('date', dateFilter);
+Object.keys(customFilters).forEach(f => env.addFilter(f, customFilters[f]));
+if (pathExists.sync(os.homedir() + '/.rename/userFilters.js')) {
+  let userFilters = require(os.homedir() + '/.rename/userFilters.js');
+  Object.keys(userFilters).forEach(f => env.addFilter(f, userFilters[f]));
+}
+
+let userData;
+if (pathExists.sync(os.homedir() + '/.rename/userData.js')) {
+  userData = require(os.homedir() + '/.rename/userData.js');
 } else {
-  userReplacements = {};
+  userData = function() { return {}; };
 }
 const UNDO_FILE = os.homedir() + '/.rename/undo.json';
 
-const REPLACEMENTS = Object.assign(defaultReplacements, userReplacements);
-
 function getOperations(files, newFileName, options) {
-  let operations = [];
-
   // Periods inside of replacement variables can be counted as file extensions, we don't want that
-  if (newFileName.ext.indexOf('}}') > -1) {
+  if (newFileName.ext.indexOf('}}') > -1 || newFileName.ext.indexOf('%}') > -1) {
     newFileName.name = newFileName.base;
     newFileName.ext = '';
   }
 
-  // BUILD FILE INDICIES by file extension
-  let fileIndex = buildFileIndex(files, newFileName);
-  
-  // FOR EACH FILE
-  files.forEach(function(value) {
-    let uniqueName = (files.length > 1 ? false: true);
-    let fullPath = path.resolve(value);
+  // Build file objects
+  let fileObjects = files.map(f => {
+    let fullPath = path.resolve(f);
+    if (options.ignoreDirectories && fs.lstatSync(fullPath).isDirectory()) return;
     let fileObj = path.parse(fullPath);
-    fileObj.newName = newFileName.name;
+    fileObj.newName = newFileName.base;
     fileObj.newNameExt = (newFileName.ext ? newFileName.ext : fileObj.ext);
-    fileObj.index = fileIndex[fileObj.newNameExt].index;
-    fileObj.totalFiles = fileIndex[fileObj.newNameExt].total;
     fileObj.options = options;
+    fileObj = replaceVariables(fileObj);
+    if (!options.noTrim) fileObj.newName = fileObj.newName.trim();
+    return fileObj;
+  });
 
-    // IGNORE DIRECTORIES if --ignoredirectories specified
-    if (options.ignoreDirectories && fs.lstatSync(fullPath).isDirectory()) {
-      return;
-    }
+  // Add indices
+  if (!options.noIndex) {
+    let counts = {};
+    let indices = {};
+    fileObjects.forEach(fileObj => {
+      let newName = fileObj.newName.toLowerCase() + '.' + fileObj.newNameExt.toLowerCase();
+      if (counts[newName]) {
+        counts[newName] += 1; 
+      } else {
+        counts[newName] = 1;
+        indices[newName] = 1;
+      }
+    });
+    fileObjects = fileObjects.map(fileObj => {
+      let newName = fileObj.newName.toLowerCase() + '.' + fileObj.newNameExt.toLowerCase();
+      let index = indices[newName];
+      let count = counts[newName];
+      if (count !== 1) {
+        fileObj.index = index;
+        fileObj.total = count;
+        fileObj.newName = fileObj.newName + fileIndexString(count, index);
+        indices[newName] += 1;
+      }
+      return fileObj;
+    });
+  }
 
-    // REGEX match and group replacement
-    if (options.regex) {
-      fileObj = regexMatch(fileObj, options);
-      fileObj = regexGroupReplacement(fileObj, options);
-    }
-    
-    // REPLACEMENT VARIABLES replace the replacement strings with their value
-    [fileObj, uniqueName] = replaceVariables(fileObj, uniqueName);
-
-    // APPEND INDEX if output file names are not unique
-    if (!uniqueName && !options.noIndex && fileIndex[fileObj.ext].total > 1) {
-      fileObj.newName = fileObj.newName + REPLACEMENTS.i.function(fileObj, '1');
-    }
-
-    // TRIM output file name unless --notrim option used
-    if (!options.noTrim) {
-      fileObj.newName = fileObj.newName.trim();
-    }
-
-    // ADD to operations
+  // Generate operations
+  let operations = [];
+  fileObjects.forEach(fileObj => {
     let operationText = path.format(fileObj).replace(process.cwd(), '').replace(/^[\\/]/, '') + ' → ';
     let newFileObj = { base: fileObj.newName + fileObj.newNameExt };
     if (options.noMove) {
       newFileObj.dir = fileObj.dir;
       operationText += fileObj.newName + fileObj.newNameExt;
     } else {
-      let newDirectory = replaceVariableString(newFileName.dir, fileObj);
+      let newDirectory = replaceVariables(fileObj, newFileName.dir);
       newFileObj.dir = path.resolve(fileObj.dir, newDirectory);
       operationText += path.format(newFileObj).replace(process.cwd(), '').replace(/^[\\/]/, '');
     }
@@ -94,8 +104,6 @@ function getOperations(files, newFileName, options) {
       deprecationMessages: deprecationMessages};
     if (!directoryExists) operationObj.missingDirectory = newFileObj.dir;
     operations.push(operationObj);
-
-    fileIndex[fileObj.newNameExt].index += 1;
   });
 
   return operations;
@@ -198,24 +206,24 @@ function run(operations, options, exitWhenFinished) { // RENAME files
   writeUndoFile(completedOps, (exitWhenFinished === true ? true : false));
 }
 
-function getReplacementsList() { // GET LIST OF REPLACEMENT VARIABLES
-  let descIndex = 16;
-  let returnText = '';
-  // filter out deprecated replacement variables
-  Object.keys(REPLACEMENTS).filter(r => { return REPLACEMENTS[r].deprecated === true ? false : true; }).forEach(function(key) {
-    let value = REPLACEMENTS[key];
-    let spaces = (descIndex - key.length - 4 > 0 ? descIndex - key.length - 4 : 1);
-    returnText += ' {{' + key + '}}' + ' '.repeat(spaces) + value.name + ': ' + value.description + '\n';
-    if (value.parameters) {
-      returnText += ' '.repeat(descIndex + 3) + 'Parameters: ' + value.parameters.description + '\n';
-    }
-  });
-  return returnText;
-}
+// function getReplacementsList() { // GET LIST OF REPLACEMENT VARIABLES
+//   let descIndex = 16;
+//   let returnText = '';
+//   // filter out deprecated replacement variables
+//   Object.keys(REPLACEMENTS).filter(r => { return REPLACEMENTS[r].deprecated === true ? false : true; }).forEach(function(key) {
+//     let value = REPLACEMENTS[key];
+//     let spaces = (descIndex - key.length - 4 > 0 ? descIndex - key.length - 4 : 1);
+//     returnText += ' {{' + key + '}}' + ' '.repeat(spaces) + value.name + ': ' + value.description + '\n';
+//     if (value.parameters) {
+//       returnText += ' '.repeat(descIndex + 3) + 'Parameters: ' + value.parameters.description + '\n';
+//     }
+//   });
+//   return returnText;
+// }
 
-function getReplacements() {
-  return REPLACEMENTS;
-}
+// function getReplacements() {
+//   return REPLACEMENTS;
+// }
 
 function undoRename() { // UNDO PREVIOUS RENAME
   fs.readJSON(UNDO_FILE, (err, packageObj) => {
@@ -233,14 +241,10 @@ function undoRename() { // UNDO PREVIOUS RENAME
 function renameFile(oldName, newName) { // rename the file
   oldName = oldName.replace(/\\\[/g, '[').replace(/\\\]/g, ']');
   newName = newName.replace(/\\\[/g, '[').replace(/\\\]/g, ']');
-  try {
-    if (pathExists.sync(oldName)) {
-      fs.renameSync(oldName, newName);
-    } else {
-      console.log(oldName + ' does not exist! Operation skipped.');
-    }
-  } catch (e) {
-    throw(e);
+  if (pathExists.sync(oldName)) {
+    fs.renameSync(oldName, newName);
+  } else {
+    console.log(oldName + ' does not exist! Operation skipped.');
   }
 }
 
@@ -266,101 +270,29 @@ function keepFiles(operation) {
   return operation;
 }
 
-function buildFileIndex(files, newFileName) {
-  let fileIndex = {};
-  if (newFileName.ext) {
-    fileIndex[newFileName.ext] = {
-      index: 1,
-      total: files.length
-    };
-  } else {
-    files.forEach(function(value) {
-      let fileObj = path.parse(path.resolve(value));
-      if (fileIndex[fileObj.ext]) {
-        fileIndex[fileObj.ext].total += 1;
-      } else {
-        fileIndex[fileObj.ext] = {
-          index: 1,
-          total: 1
-        };
-      }
-    });
-  }
-  return fileIndex;
-}
-
-function regexMatch(fileObj, options) {
-  let pattern;
-  let patterns = [];
-  let matches = [];
-  options.regex.forEach((regex) => {
-    try {
-      pattern = new RegExp(regex.replace(/\(\?\<\w+\>/g, '('), 'g');
-    } catch (err) {
-      console.log(err.message);
-      process.exit(1);
-    }
-    matches = matches.concat(fileObj.name.match(pattern));
-    patterns.push(pattern);
-  });
-  fileObj.regexPatterns = patterns;
-  fileObj.regexMatches = matches;
-
-  return fileObj;
-}
-
-function regexGroupReplacement(fileObj, options) {
-  options.regex.forEach((regex) => {
-    let groupNames = regex.match(/\<[A-Za-z]+\>/g);
-    if (groupNames !== null) {
-      let re = namedRegexp(regex);
-      let reGroups = re.execGroups(fileObj.name);
-      groupNames.forEach(function(value) {
-        let g = value.replace(/\W/g, '');
-        if (reGroups && reGroups[g]) {
-          fileObj.newName = fileObj.newName.replace('{{' + g + '}}', reGroups[g]);
-        } else {
-          fileObj.newName = fileObj.newName.replace('{{' + g + '}}', '');
-        }
-      });
-    }
-  });
-
-  return fileObj;
-}
-
-function replaceVariables(fileObj, uniqueName) {
-  while (fileObj.newName.indexOf('{{') > -1) {
-    let start = fileObj.newName.lastIndexOf('{{') + 2;
-    let end = fileObj.newName.indexOf('}}', start);
-    let repResult = fileObj.newName.substring(start, end);
-    let repArr = repResult.split('|');
-    let repVar = repArr[0];
-    if (Object.keys(REPLACEMENTS).indexOf(repVar) > -1) {
-      let repObj = REPLACEMENTS[repVar];
-      let defaultArg = (repObj.parameters && repObj.parameters.default ? repObj.parameters.default : '');
-      let repArg = repArr.slice(1).join('|').replace(/^\|+/, '');
-      fileObj.newName = fileObj.newName.replace('{{' + repResult + '}}', repObj.function(fileObj, repArg || defaultArg));
-      if (repObj.unique) {
-        uniqueName = true;
-      }
-      if (repObj.deprecated === true) {
-        if (fileObj.deprecationMessages === undefined) fileObj.deprecationMessages = [];
-        fileObj.deprecationMessages.push('Variable {{' + repVar + '}} is deprecated' + (repObj.deprecationMessage ? ', ' + repObj.deprecationMessage : '') + '.');
-      }
+function replaceVariables(fileObj, someString) {
+  let d = defaultData(fileObj);
+  let userD = userData(fileObj);
+  let allData = Object.assign(d, userD); // Merge default and user data objects (user data overrides default data)
+  try {
+    if (someString === undefined || someString === null) {
+      fileObj.newName = nunjucks.renderString(fileObj.newName, allData);
+      return fileObj;
     } else {
-      throw 'InvalidReplacementVariable';
+      return nunjucks.renderString(someString, allData);
     }
+  } catch(e) {
+    throw(e.name + ': ' + e.message + '\n' + (someString ? someString : fileObj.newName));
   }
-
-  return [fileObj, uniqueName];
 }
 
-function replaceVariableString(input, fileObj, uniqueName) {
-  fileObj.newName = input;
-  if (uniqueName === undefined || uniqueName === null) uniqueName = true;
-  [fileObj, uniqueName] = replaceVariables(fileObj, uniqueName);
-  return fileObj.newName;
+function fileIndexString(total, index) { // append correct number of zeroes depending on total number of files
+  let totString = '' + total;
+  let returnString = '' + index;
+  while (returnString.length < totString.length) {
+    returnString = '0' + returnString;
+  }
+  return returnString;
 }
 
 module.exports = {
@@ -370,7 +302,5 @@ module.exports = {
   getFileArray: getFileArray,
   hasConflicts: hasConflicts,
   hasMissingDirectories: hasMissingDirectories,
-  getReplacementsList: getReplacementsList,
-  getReplacements: getReplacements,
   undoRename: undoRename
 };

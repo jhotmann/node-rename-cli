@@ -8,13 +8,16 @@
             "experimentalObjectRestSpread": true
         }
     },
-    "extends": "eslint:recommended",
+    "extends": ["eslint:recommended", "plugin:mocha/recommended"],
     "rules": {
         "semi": 2,
         "eqeqeq": ["warn", "smart"],
         "no-unused-vars": 1,
         "no-console": 0
     },
+    "plugins": [
+        "mocha"
+    ],
     "env": {
         "node": true
     }
