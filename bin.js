@@ -78,6 +78,10 @@ function parseArgs() {
     rename.undoRename();
   } else if (argv.w) { // launch the wizard
     require('./lib/wizard')();
+  } else if (argv.printdata) {
+    let file = argv._.pop();
+    let options = rename.argvToOptions(argv);
+    rename.printData(file, options);
   } else if (argv._.length > 1) { // proceed to do the rename
     renameFiles();
   } else if (argv._.length === 0 && !compiled) {

@@ -25,6 +25,18 @@ if (pathExists.sync(os.homedir() + '/.rename/userData.js')) {
 }
 const UNDO_FILE = os.homedir() + '/.rename/undo.json';
 
+function printData(file, options) {
+  let fullPath = path.resolve(file);
+  if (options.ignoreDirectories && fs.lstatSync(fullPath).isDirectory()) return;
+  let fileObj = path.parse(fullPath);
+  fileObj.options = options;
+  let d = defaultData(fileObj);
+  let userD = userData(fileObj);
+  let allData = Object.assign(d, userD);
+  console.dir(allData);
+  process.exit(0);
+}
+
 function getOperations(files, newFileName, options) {
   // Periods inside of replacement variables can be counted as file extensions, we don't want that
   if (newFileName.ext.indexOf('}}') > -1 || newFileName.ext.indexOf('%}') > -1) {
@@ -37,7 +49,8 @@ function getOperations(files, newFileName, options) {
     let fullPath = path.resolve(f);
     if (options.ignoreDirectories && fs.lstatSync(fullPath).isDirectory()) return;
     let fileObj = path.parse(fullPath);
-    fileObj.newName = newFileName.base;
+    let newFileNameRegexp = new RegExp(newFileName.ext + '$');
+    fileObj.newName = newFileName.base.replace(newFileNameRegexp, '');
     fileObj.newNameExt = (newFileName.ext ? newFileName.ext : fileObj.ext);
     fileObj.options = options;
     fileObj = replaceVariables(fileObj);
@@ -50,7 +63,7 @@ function getOperations(files, newFileName, options) {
     let counts = {};
     let indices = {};
     fileObjects.forEach(fileObj => {
-      let newName = fileObj.newName.toLowerCase() + '.' + fileObj.newNameExt.toLowerCase();
+      let newName = replaceVariables(fileObj, newFileName.dir) + '/' + fileObj.newName.toLowerCase() + '.' + fileObj.newNameExt.toLowerCase();
       if (counts[newName]) {
         counts[newName] += 1; 
       } else {
@@ -59,13 +72,17 @@ function getOperations(files, newFileName, options) {
       }
     });
     fileObjects = fileObjects.map(fileObj => {
-      let newName = fileObj.newName.toLowerCase() + '.' + fileObj.newNameExt.toLowerCase();
+      let newName = replaceVariables(fileObj, newFileName.dir) + '/' + fileObj.newName.toLowerCase() + '.' + fileObj.newNameExt.toLowerCase();
       let index = indices[newName];
       let count = counts[newName];
       if (count !== 1) {
         fileObj.index = index;
         fileObj.total = count;
-        fileObj.newName = fileObj.newName + fileIndexString(count, index);
+        if (fileObj.newName.indexOf('--FILEINDEXHERE--') > -1) {
+          fileObj.newName = fileObj.newName.replace('--FILEINDEXHERE--', fileIndexString(count, index));
+        } else {
+          fileObj.newName = fileObj.newName + fileIndexString(count, index);
+        }
         indices[newName] += 1;
       }
       return fileObj;
@@ -302,5 +319,6 @@ module.exports = {
   getFileArray: getFileArray,
   hasConflicts: hasConflicts,
   hasMissingDirectories: hasMissingDirectories,
-  undoRename: undoRename
+  undoRename: undoRename,
+  printData: printData
 };
