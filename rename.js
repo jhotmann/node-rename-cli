@@ -50,13 +50,13 @@ function getOperations(files, newFileName, options) {
     if (options.ignoreDirectories && fs.lstatSync(fullPath).isDirectory()) return;
     let fileObj = path.parse(fullPath);
     let newFileNameRegexp = new RegExp(newFileName.ext + '$');
-    fileObj.newName = newFileName.base.replace(newFileNameRegexp, '');
+    fileObj.newName = newFileName.base.replace(newFileNameRegexp, '').replace(/^"|"$/g, '');
     fileObj.newNameExt = (newFileName.ext ? newFileName.ext : fileObj.ext);
     fileObj.options = options;
     fileObj = replaceVariables(fileObj);
     if (!options.noTrim) fileObj.newName = fileObj.newName.trim();
     return fileObj;
-  });
+  }).filter(f => f !== undefined);
 
   // Add indices
   if (!options.noIndex) {

@@ -1,3 +1,4 @@
+<!--TODO document this https://apple.stackexchange.com/questions/40734/why-is-my-host-name-wrong-at-the-terminal-prompt-when-connected-to-a-public-wifi-->
 # Rename-CLI
 A cross-platform tool for renaming files quickly, especially multiple files at once.
 

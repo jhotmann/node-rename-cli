@@ -85,7 +85,7 @@ function parseArgs() {
   } else if (argv._.length > 1) { // proceed to do the rename
     renameFiles();
   } else if (argv._.length === 0 && !compiled) {
-    require('./lib/ui');
+    require('./lib/ui2');
   } else {
     console.log('ERROR: Not enough arguments specified. Type rename -h for help');
     process.exit(1);
