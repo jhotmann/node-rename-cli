@@ -57,7 +57,7 @@ function getOperations(files, newFileName, options) {
     }
 
     fileObj.newName = (newFileName.ext ? newFileName.base.replace(newFileNameRegexp, '') : newFileName.base).replace(/^"|"$/g, '');
-    fileObj.newNameExt = (newFileName.ext ? newFileName.ext : fileObj.ext);
+    fileObj.newNameExt = (newFileName.ext ? newFileName.ext : (options.noExt ? '' : fileObj.ext));
     fileObj.options = options;
     fileObj = replaceVariables(fileObj);
     if (!options.noTrim) fileObj.newName = fileObj.newName.trim();
@@ -144,7 +144,8 @@ function argvToOptions(argv) {
     noTrim: (argv.notrim ? true : false),
     ignoreDirectories: (argv.d ? true : false),
     noMove: (argv.nomove ? true : false),
-    createDirs: (argv.createdirs ? true : false)
+    createDirs: (argv.createdirs ? true : false),
+    noExt: (argv.noext ? true : false)
   };
   if (options.noMove && options.createDirs) options.createDirs = false;
   return options;
@@ -234,9 +235,14 @@ function getVariableList() {
   return traverse.paths(defaultVars).map(v => {
     if (v.length === 1 && typeof defaultVars[v[0]] !== "object") {
       return '{{' + v[0] + '}}' + ' - ' + defaultVars[v[0]];
-    } else if (v.length === 2) {
+    } else if (v.length > 1) {
       let p = v.join('.');
-      return '{{' + p + '}}' + ' - ' + defaultVars[v[0]][v[1]];
+      let value;
+      v.forEach(val => {
+        if (!value) value = defaultVars[val];
+        else value = value[val];
+      });
+      return '{{' + p + '}}' + ' - ' + value;
     }
   }).filter(v => v !== undefined).join('\n\n');
 }
