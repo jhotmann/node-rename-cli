@@ -2,7 +2,7 @@
 # Rename-CLI
 A cross-platform tool for renaming files quickly, especially multiple files at once.
 
-*Note* Version 7 has big changes from version 6, if you are staying on version 6 you can find the old documentation [here](README6.md)
+*Note* Version 7 has big changes from version 6, if you are staying on version 6 you can find the old documentation [here](docs/README6.md)
 
 ![gif preview](images/rename.gif)
 
@@ -16,9 +16,9 @@ homebrew: `coming soon!`
 - Variable replacement and filtering of new file name (powered by [Nunjucks](https://mozilla.github.io/nunjucks/templating.html))
 - Glob file matching
 - Undo previous rename
-- Ability to add your own variables and filters
+- Customize by adding your own variables and filters
 - Auto-indexing when renaming multiple files to the same name
-- RegEx support
+- RegEx match/replace
 - Exif data support
 
 ## Usage
@@ -30,7 +30,7 @@ The new file name does not need to contain a file extension. If you do not speci
 
 *Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension.*
 
-### Options
+## Options
  ```-h```, ```--help```: Show help    
  ```-i```, ```--info```: View online help    
  ```-w```, ```--wizard```: Run a wizard to guide you through renaming files    
@@ -46,8 +46,9 @@ The new file name does not need to contain a file extension. If you do not speci
  ```--createdirs```: Automatically create missing directories (cannot be used with `--nomove`)    
  ```--printdata```: Print the data available for a file
 
-### Built-in Variables
-The new file name can contain any number of built-in and custom variables that will be replaced with their corresponding value. 
+## Built-in Variables
+<details><summary>The new file name can contain any number of built-in and custom variables that will be replaced with their corresponding value. Expand for more info.</summary>
+<p>
 
  `{{i}}` Index: The index of the file when renaming multiple files to the same name. If you do no include `{{i}}` in your new file name, the index will be appended to the end. Use the `--noindex` option to prevent auto-indexing.
 
@@ -65,14 +66,20 @@ The new file name can contain any number of built-in and custom variables that w
 
 You can also add your own variables. See the [Customize](#customize) section for more info.
 
-### Filters
-You can modify variable values by applying filters. Multiple filters can be chained together. Nunjucks, the underlying engine, has a large number of [filters available](https://mozilla.github.io/nunjucks/templating.html#builtin-filters) and Rename-CLI has a few of its own. Here are some common ones:
+</p>
+</details>
+
+## Filters
+<details><summary>You can modify variable values by applying filters. Multiple filters can be chained together. Nunjucks, the underlying engine, has a large number of <a href="https://mozilla.github.io/nunjucks/templating.html#builtin-filters">filters available</a> and Rename-CLI has a few of its own. Expand for more info.</summary>
+<p>
 
 String case manipulation
   - `lower` - all lowercase
   - `upper` - ALL UPPERCASE
-  - `camel` - `something like-this` → `somethingLikeThis`
-  - `pascal` - `something like-this` → `SomethingLikeThis`
+  - `camel` - `something like-this → somethingLikeThis`
+  - `pascal` - `something like-this → SomethingLikeThis`
+
+-----
 
 `replace` - replace a character or string with something else.
 
@@ -81,6 +88,8 @@ rename "bills file.pdf" "{{ f | replace('bill', 'mary') | pascal }}"
 
 bills file.pdf → MarysFile.pdf
 ```
+
+-----
 
 `date` - format a date to a specific format, the default is `YYYYMMDD` if no parameter is passed. To use your own format, simply pass the format as a string parameter to the date filter. Formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/).
 
@@ -92,6 +101,8 @@ bills file.pdf → MarysFile.pdf
   c.txt → 05-02-2020-c.txt
   ```
 
+  -----
+
 `match(RegExp[, flags, group num/name])` - match substring(s) using a regular expression. The only required parameter is the regular expression (as a string), it also allows for an optional parameter flags (a string containing any or all of the flags: gimsuy, more info [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/RegExp#Parameters)), and an option parameter of the group number or name. *Named groups cannot be used with the global flag.*
 
 ```sh
@@ -100,6 +111,9 @@ rename *ExpenseReport* "archive/{{ f | match('^.+(?=Expense)') }}/ExpenseReport.
 JanuaryExpenseReport.docx → archive/January/ExpenseReport.docx
 MarchExpenseReport.docx → archive/March/ExpenseReport.docx
 ```
+
+</p>
+</details>
 
 ## Customize
 <details><summary>Expand</summary>

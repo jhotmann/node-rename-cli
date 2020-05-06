@@ -25,7 +25,7 @@ const argv = yargs
     .usage('Rename-CLI v' + require('./package.json').version + '\n\nUsage:\n\n  rename [options] file(s) new-file-name')
     .options(require('./lib/yargsOptions'))
     .help('help')
-    .epilogue('Variables:\n\n')// + rename.getReplacementsList())
+    .epilogue('Variables:\n\n' + rename.getVariableList())// + rename.getReplacementsList())
     .wrap(yargs.terminalWidth())
     .argv;
 
@@ -85,7 +85,7 @@ function parseArgs() {
   } else if (argv._.length > 1) { // proceed to do the rename
     renameFiles();
   } else if (argv._.length === 0 && !compiled) {
-    require('./lib/ui2');
+    require('./lib/ui');
   } else {
     console.log('ERROR: Not enough arguments specified. Type rename -h for help');
     process.exit(1);
@@ -101,6 +101,7 @@ function renameFiles() {
   try {
     operations = rename.getOperations(files, newFileName, options);
   } catch (e) {
+    console.dir(e); //TODO remove when done debugging
     if (typeof e === 'string' && e.startsWith('Template render error')) {
       let actualError = e.split('\n').length > 1 ? e.split('\n')[1].trim() : e;
       let helpfulText = e.split('\n').length > 2 ? e.split('\n')[2].trim() : '';

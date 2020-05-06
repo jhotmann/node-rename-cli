@@ -137,7 +137,7 @@ As of version `6.0.0` a new way of using regular expressions has been added. You
 
 ## Installation
 1. Install NodeJS if you haven't already https://nodejs.org
-1. Type `npm install -g rename-cli` into your terminal or command window.
+1. Type `npm install -g rename-cli@6` into your terminal or command window.
 
 ## Adding custom replacement variables
 Whenever you run rename for the first time a file ```~/.rename/replacements.js``` or ```C:\Users\[username]\.rename\replacements.js``` is created. You can edit this file and add your own replacement variables **and override** the default replacements if desired. The user replacements.js file contains a decent amount of documentation in it and you can check out the default [replacements.js](lib/replacements.js) file for more examples. If you come up with some handy replacements, feel free to submit them to be included in the defaults with a pull request or submit it as an issue.

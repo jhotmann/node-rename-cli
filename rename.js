@@ -5,6 +5,7 @@ const os = require('os');
 const path = require('path');
 const pathExists = require('path-exists');
 const prompt = require('prompt-sync')();
+const traverse = require('traverse');
 const defaultData = require('./lib/data');
 
 let env = nunjucks.configure({ autoescape: true, noCache: true });
@@ -38,19 +39,24 @@ function printData(file, options) {
 }
 
 function getOperations(files, newFileName, options) {
-  // Periods inside of replacement variables can be counted as file extensions, we don't want that
-  if (newFileName.ext.indexOf('}}') > -1 || newFileName.ext.indexOf('%}') > -1) {
-    newFileName.name = newFileName.base;
-    newFileName.ext = '';
-  }
-
   // Build file objects
   let fileObjects = files.map(f => {
     let fullPath = path.resolve(f);
     if (options.ignoreDirectories && fs.lstatSync(fullPath).isDirectory()) return;
     let fileObj = path.parse(fullPath);
-    let newFileNameRegexp = new RegExp(newFileName.ext + '$');
-    fileObj.newName = newFileName.base.replace(newFileNameRegexp, '').replace(/^"|"$/g, '');
+    let newFileNameRegexp = new RegExp(newFileName.ext.replace('|', '\\|') + '$');
+
+    // Periods inside of replacement variables can be counted as file extensions, we don't want that
+    if (newFileName.ext.includes('{{')) {
+      newFileName.base = newFileName.base.replace(newFileNameRegexp, '').replace(/^"|"$/g, '');
+      newFileName.ext = replaceVariables(fileObj, newFileName.ext);
+    }
+    if (newFileName.ext.indexOf('}}') > -1 || newFileName.ext.indexOf('%}') > -1) {
+      newFileName.name = newFileName.base;
+      newFileName.ext = '';
+    }
+
+    fileObj.newName = (newFileName.ext ? newFileName.base.replace(newFileNameRegexp, '') : newFileName.base).replace(/^"|"$/g, '');
     fileObj.newNameExt = (newFileName.ext ? newFileName.ext : fileObj.ext);
     fileObj.options = options;
     fileObj = replaceVariables(fileObj);
@@ -180,7 +186,7 @@ function run(operations, options, exitWhenFinished) { // RENAME files
     if (!options.force && operation.original.toLowerCase() !== operation.output.toLowerCase() && pathExists.sync(operation.output)) { // If file already exists
       if (options.keep) {
         operation = keepFiles(operation);
-        renameFile(operation.original, operation.output);
+        renameFile(operation.original, operation.output, options.verbose);
         completedOps.push(operation);
       } else {
         console.log('\n' + operation.text + '\n' + operation.text.split(' → ')[1] + ' already exists. What would you like to do?');
@@ -189,18 +195,18 @@ function run(operations, options, exitWhenFinished) { // RENAME files
         console.log('3) Skip');
         let response = prompt('Please input a number: ');
         if (response === '1') {
-          renameFile(operation.original, operation.output);
+          renameFile(operation.original, operation.output, options.verbose);
           completedOps.push(operation);
         } else if (response === '2') {
           operation = keepFiles(operation);
-          renameFile(operation.original, operation.output);
+          renameFile(operation.original, operation.output, options.verbose);
           completedOps.push(operation);
         }
       }
     } else if (!operation.directoryExists && operation.missingDirectory && operation.original.toLowerCase() !== operation.output.toLowerCase() && createdDirectories.indexOf(operation.missingDirectory) === -1) { // Directory doesn't exist
       if (options.force || options.createDirs) {
         fs.mkdirpSync(operation.missingDirectory);
-        renameFile(operation.original, operation.output);
+        renameFile(operation.original, operation.output, options.verbose);
         completedOps.push(operation);
       } else {
         console.log('\n' + operation.text + '\n' + operation.missingDirectory + ' does not exist. What would you like to do?');
@@ -210,17 +216,29 @@ function run(operations, options, exitWhenFinished) { // RENAME files
         if (response === '1') {
           createdDirectories.push(operation.missingDirectory);
           fs.mkdirpSync(operation.missingDirectory);
-          renameFile(operation.original, operation.output);
+          renameFile(operation.original, operation.output, options.verbose);
           completedOps.push(operation);
         }
       }
     } else { // file doesn't already exist and directory exists
-      renameFile(operation.original, operation.output);
+      renameFile(operation.original, operation.output, options.verbose);
       completedOps.push(operation);
     }
   });
 
   writeUndoFile(completedOps, (exitWhenFinished === true ? true : false));
+}
+
+function getVariableList() {
+  let defaultVars = defaultData(path.parse(__filename), true);
+  return traverse.paths(defaultVars).map(v => {
+    if (v.length === 1 && typeof defaultVars[v[0]] !== "object") {
+      return '{{' + v[0] + '}}' + ' - ' + defaultVars[v[0]];
+    } else if (v.length === 2) {
+      let p = v.join('.');
+      return '{{' + p + '}}' + ' - ' + defaultVars[v[0]][v[1]];
+    }
+  }).filter(v => v !== undefined).join('\n\n');
 }
 
 // function getReplacementsList() { // GET LIST OF REPLACEMENT VARIABLES
@@ -255,11 +273,12 @@ function undoRename() { // UNDO PREVIOUS RENAME
   });
 }
 
-function renameFile(oldName, newName) { // rename the file
+function renameFile(oldName, newName, verbose) { // rename the file
   oldName = oldName.replace(/\\\[/g, '[').replace(/\\\]/g, ']');
   newName = newName.replace(/\\\[/g, '[').replace(/\\\]/g, ']');
   if (pathExists.sync(oldName)) {
     fs.renameSync(oldName, newName);
+    if (verbose) console.log(`${oldName} renamed to ${newName}`);
   } else {
     console.log(oldName + ' does not exist! Operation skipped.');
   }
@@ -320,5 +339,6 @@ module.exports = {
   hasConflicts: hasConflicts,
   hasMissingDirectories: hasMissingDirectories,
   undoRename: undoRename,
-  printData: printData
+  printData: printData,
+  getVariableList: getVariableList
 };
