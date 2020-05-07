@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha --file tests/test.js",
-    "build": "pkg -o bin\\rname -t node10-win-x64 ."
+    "build": "pkg --out-path bin -t latest-win-x64,latest-macos-x64,latest-linux-x64 ."
   },
   "author": "Jordan Hotmann",
   "license": "MIT",
@@ -41,7 +41,8 @@
   "pkg": {
     "assets": [
       "lib/userData.js",
-      "lib/userFilters.js"
+      "lib/userFilters.js",
+      "node_modules/terminal-kit/**/*"
     ]
   },
   "devDependencies": {

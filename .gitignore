@@ -33,4 +33,4 @@ npm-debug.log
 test
 
 # bin directory
-bin/*.*
+bin/*

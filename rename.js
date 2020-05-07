@@ -26,7 +26,8 @@ if (pathExists.sync(os.homedir() + '/.rename/userData.js')) {
 }
 const UNDO_FILE = os.homedir() + '/.rename/undo.json';
 
-function printData(file, options) {
+function printData(file, options) { // prints the data available for a file
+  if (!file) file = __filename;
   let fullPath = path.resolve(file);
   if (options.ignoreDirectories && fs.lstatSync(fullPath).isDirectory()) return;
   let fileObj = path.parse(fullPath);
@@ -34,6 +35,9 @@ function printData(file, options) {
   let d = defaultData(fileObj);
   let userD = userData(fileObj);
   let allData = Object.assign(d, userD);
+  console.log('----- fileObj -----');
+  console.dir(fileObj);
+  console.log('----- variables -----');
   console.dir(allData);
   process.exit(0);
 }
