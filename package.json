@@ -9,7 +9,7 @@
     "rname": "./bin.js"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --file tests/test.js",
+    "test": "node_modules/mocha/bin/mocha --file tests/test.js",
     "build": "pkg --out-path bin -t latest-win-x64,latest-macos-x64,latest-linux-x64 ."
   },
   "author": "Jordan Hotmann",

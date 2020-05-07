@@ -1,7 +1,9 @@
 /* eslint-disable no-undef */
 const assert = require('assert');
 const fs = require('fs-extra');
+const os = require('os');
 const path = require('path');
+const pathExists = require('path-exists');
 const rename = require('../rename');
 const yargs = require('yargs');
 const yargsOptions = require('../lib/yargsOptions');
@@ -15,6 +17,8 @@ for (let i = 1; i < 31; i++) {
   let num = inWords(i);
   fs.writeFileSync((i < 20 ? 'test/' : 'test/another-dir/') + num.trim().replace(' ', '-') + '.txt', 'file ' + num.trim(), 'utf8');
 }
+let undoFile = os.homedir() + '/.rename/undo.json';
+if (!pathExists.sync(undoFile)) fs.writeJSONSync(undoFile, []);
 
 // run tests
 runCommand('rename test/one.txt test/one-renamed.txt');
