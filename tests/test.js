@@ -18,7 +18,13 @@ for (let i = 1; i < 31; i++) {
   fs.writeFileSync((i < 20 ? 'test/' : 'test/another-dir/') + num.trim().replace(' ', '-') + '.txt', 'file ' + num.trim(), 'utf8');
 }
 let undoFile = os.homedir() + '/.rename/undo.json';
-if (!pathExists.sync(undoFile)) fs.writeJSONSync(undoFile, []);
+if (!pathExists.sync(undoFile)) {
+  try {
+    fs.writeJSONSync(undoFile, []);
+  } catch(e) {
+    console.dir(e);
+  }
+}
 
 // run tests
 runCommand('rename test/one.txt test/one-renamed.txt');
