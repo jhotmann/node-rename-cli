@@ -6,7 +6,7 @@ A cross-platform tool for renaming files quickly, especially multiple files at o
 
 ![gif preview](images/rename.gif)
 
-![Build](https://github.com/jhotmann/node-rename-cli/workflows/Node.js%20CI/badge.svg?branch=7.0.0)
+![Build and Test](https://github.com/jhotmann/node-rename-cli/workflows/Build%20and%20Test/badge.svg?branch=7.0.0)
 
 ## Installation
 
@@ -61,6 +61,8 @@ The new file name does not need to contain a file extension. If you do not speci
 
  `{{p}}` Parent directory: The name of the parent directory.
 
+ `{{isDirectory}}` Is directory: true/false. Useful for conditionally adding a file extension to files and not directories with `{% if isDirectory %}...`
+
  `{{os.x}}` Operating System: Information about the OS/user. Replace `x` with `homedir`, `hostname`, `platform`, or `user`
 
  `{{date.x}}` Dates: Insert a date. Replace `x` with `current` (the current date/time), `create` (the file's created date/time), `access` (the file's last accessed date/time) or `modify` (the file's last modified date/time)
@@ -86,7 +88,7 @@ String case manipulation
 
 -----
 
-`replace` - replace a character or string with something else.
+`replace('something', 'replacement')` - replace a character or string with something else.
 
 ```sh
 rename "bills file.pdf" "{{ f | replace('bill', 'mary') | pascal }}"
@@ -99,6 +101,12 @@ bills file.pdf → MarysFile.pdf
 `date` - format a date to a specific format, the default is `YYYYMMDD` if no parameter is passed. To use your own format, simply pass the format as a string parameter to the date filter. Formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/).
 
   ```sh
+  rename *.txt "{{ d.now | date }}-{{f}}"
+
+  a.txt → 20200502-a.txt
+  b.txt → 20200502-b.txt
+  c.txt → 20200502-c.txt
+
   rename *.txt "{{ d.now | date('MM-DD-YYYY') }}-{{f}}"
 
   a.txt → 05-02-2020-a.txt

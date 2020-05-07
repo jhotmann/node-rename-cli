@@ -46,8 +46,10 @@ function getOperations(files, newFileName, options) {
   // Build file objects
   let fileObjects = files.map(f => {
     let fullPath = path.resolve(f);
-    if (options.ignoreDirectories && fs.lstatSync(fullPath).isDirectory()) return;
+    let isDirectory = fs.lstatSync(fullPath).isDirectory();
+    if (options.ignoreDirectories && isDirectory) return;
     let fileObj = path.parse(fullPath);
+    fileObj.isDirectory = isDirectory;
     let newFileNameRegexp = new RegExp(newFileName.ext.replace('|', '\\|') + '$');
 
     // Periods inside of replacement variables can be counted as file extensions, we don't want that
@@ -109,7 +111,7 @@ function getOperations(files, newFileName, options) {
       operationText += fileObj.newName + fileObj.newNameExt;
     } else {
       let newDirectory = replaceVariables(fileObj, newFileName.dir);
-      newFileObj.dir = path.resolve(fileObj.dir, newDirectory);
+      newFileObj.dir = path.resolve(newDirectory);
       operationText += path.format(newFileObj).replace(process.cwd(), '').replace(/^[\\/]/, '');
     }
     let originalFileName = path.format({dir: fileObj.dir, base: fileObj.base});
