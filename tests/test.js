@@ -9,4 +9,4 @@ fs.ensureDirSync('test');
 fs.writeFileSync('test/one.txt', 'file one', 'utf8');
 fs.writeFileSync('test/two.txt', 'file two', 'utf8');
 // run tests
-describe();
+describe('Simple Tests');
