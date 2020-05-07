@@ -67,8 +67,20 @@ function getOperations(files, newFileName, options) {
     fileObj.options = options;
     fileObj = replaceVariables(fileObj);
     if (!options.noTrim) fileObj.newName = fileObj.newName.trim();
+
+    let stats = fs.statSync(fullPath, true);
+    fileObj.size = stats.size;
+    fileObj.dateCreate = stats.birthtimeMs;
+    fileObj.dateModify = stats.mtimeMs;
     return fileObj;
   }).filter(f => f !== undefined);
+
+  if (options.sort) {
+    if (options.sort.includes('date-create')) fileObjects = fileObjects.sort((a,b) => { return b.dateCreate - a.dateCreate; });
+    else if (options.sort.includes('date-modify')) fileObjects = fileObjects.sort((a,b) => { return b.dateModify - a.dateModify; });
+    else if (options.sort.includes('size')) fileObjects = fileObjects.sort((a,b) => { return b.size - a.size; });
+    if (options.sort.includes('reverse')) fileObjects.reverse();
+  }
 
   // Add indices
   if (!options.noIndex) {
@@ -152,7 +164,8 @@ function argvToOptions(argv) {
     noMove: (argv.nomove ? true : false),
     createDirs: (argv.createdirs ? true : false),
     noExt: (argv.noext ? true : false),
-    noUndo: (argv.noundo ? true : false)
+    noUndo: (argv.noundo ? true : false),
+    sort: (argv.sort ? argv.sort : false)
   };
   if (options.noMove && options.createDirs) options.createDirs = false;
   return options;
