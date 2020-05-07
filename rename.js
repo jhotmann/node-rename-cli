@@ -25,6 +25,7 @@ if (pathExists.sync(os.homedir() + '/.rename/userData.js')) {
   userData = function() { return {}; };
 }
 const UNDO_FILE = os.homedir() + '/.rename/undo.json';
+if (!pathExists.sync(UNDO_FILE)) fs.writeJSONSync(UNDO_FILE, []);
 
 function printData(file, options) { // prints the data available for a file
   if (!file) file = __filename;
