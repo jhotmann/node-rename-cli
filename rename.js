@@ -275,7 +275,7 @@ function getVariableList() {
 
 function undoRename() { // UNDO PREVIOUS RENAME
   fs.readJSON(UNDO_FILE, (err, packageObj) => {
-    if (err) throw err;
+    if (err) console.dir(err);
     let ops = [];
     packageObj.forEach(function(value) {
       [value.original, value.output] = [value.output, value.original];
