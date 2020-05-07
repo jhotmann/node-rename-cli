@@ -28,4 +28,46 @@ jobs:
       with:
         name: binaries
         path: /home/runner/work/node-rename-cli/node-rename-cli/bin
+  test_linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm i -g mocha
+    - run: npm ci
     - run: npm test
+  test_macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm i -g mocha
+    - run: npm ci
+    - run: npm test
+  test_windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm i -g mocha
+    - run: npm ci
+    - run: npm test
+      working-directory: ${{ github.workspace }}
