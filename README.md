@@ -6,6 +6,8 @@ A cross-platform tool for renaming files quickly, especially multiple files at o
 
 ![gif preview](images/rename.gif)
 
+![Build](https://github.com/jhotmann/node-rename-cli/workflows/Node.js%20CI/badge.svg?branch=7.0.0)
+
 ## Installation
 
 npm: `npm i -g rename-cli` (sudo if necessary)  
