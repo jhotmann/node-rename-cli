@@ -28,20 +28,20 @@ if (!pathExists.sync(undoFile)) {
 }
 
 // run tests
-runTest('rename test/one.txt test/one-renamed.txt', 'Rename a single file', 'test/one.txt', 'test/one-renamed.txt');
+runTest('rename -v test/one.txt test/one-renamed.txt', 'Rename a single file', 'test/one.txt', 'test/one-renamed.txt');
 
 runTest('rename test/f*.txt test/multiple',
   'Rename multiple files the same thing with appended index',
   ['test/four.txt', 'test/five.txt', 'test/fourteen.txt', 'test/fifteen.txt'],
   ['test/multiple1.txt', 'test/multiple2.txt', 'test/multiple3.txt', 'test/multiple4.txt']);
 
-runTest('rename test/two.txt "{{p}}/{{f|upper}}.{{\'testing-stuff\'|camel}}"',
+runTest('rename -v test/two.txt "{{p}}/{{f|upper}}.{{\'testing-stuff\'|camel}}"',
   'Rename with variables and filters', 'test/two.txt', 'test/TWO.testingStuff');
 
-runTest('rename test/th* test/same --noindex -force', 'Force multiple files to be renamed the same',
+runTest('rename -v test/th* test/same --noindex -force', 'Force multiple files to be renamed the same',
   ['test/three.txt', 'test/thirteen.txt'], 'test/same.txt');
 
-  runTest('rename  test/one-renamed.txt "test/another-dir/{{os.platform}}"', 'Move a file to a new directory',
+  runTest('rename -v test/one-renamed.txt "test/another-dir/{{os.platform}}"', 'Move a file to a new directory',
     'test/one-renamed.txt', 'test/another-dir/' + os.platform() + '.txt');
 
 // HELPER FUNCTIONS

@@ -10,9 +10,9 @@ A cross-platform tool for renaming files quickly, especially multiple files at o
 
 ## Installation
 
-npm: `npm i -g rename-cli` (sudo if necessary)  
-chocolatey: `coming soon!`  
-homebrew: `coming soon!`
+npm: `npm i -g rename-cli@beta` (sudo if necessary)  
+<!--chocolatey: `coming soon!`  
+homebrew: `coming soon!`-->
 
 ## Features
 - Variable replacement and filtering of new file name (powered by [Nunjucks](https://mozilla.github.io/nunjucks/templating.html))
@@ -32,7 +32,7 @@ Or simply type `rename` for an interactive cli with live previews of rename oper
 
 The new file name does not need to contain a file extension. If you do not specifiy a file extension the original file extension will be preserved.
 
-*Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension.*
+*Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension. I recommend using `.{{ext}}` to preserve the original file etension.*
 
 ## Options
  ```-h```, ```--help```: Show help    
@@ -40,10 +40,11 @@ The new file name does not need to contain a file extension. If you do not speci
  ```-w```, ```--wizard```: Run a wizard to guide you through renaming files    
  ```-u```, ```--undo```: Undo previous rename operation        
  ```-k```, ```--keep```: Keep both files when new file name already exists (append a number)    
- ```-f```, ```--force```: Force overwrite without prompt when new file name already exists    
+ ```-f```, ```--force```: Force overwrite without prompt when new file name already exists and create any missing directories    
  ```-s```, ```--sim```: Simulate rename and just print new file names    
  ```-n```, ```--noindex```: Do not append an index when renaming multiple files    
  ```-d```, ```--ignoredirectories```: Do not rename directories    
+ ```--sort```: Sort files before renaming. Parameter: `alphabet` (default), `date-create` (most recent first), `date-modified` (most recent first), `size` (biggest first). Include the word `reverse` before or after (use a dash or no space) to reverse the sort order.
  ```-p```, ```--prompt```: Print all rename operations to be completed and confirm before proceeding    
  ```--notrim```: Do not trim whitespace at beginning or end of ouput file name    
  ```--nomove ```: Do not move files if their new file name points to a different directory  
@@ -77,7 +78,7 @@ You can also add your own variables. See the [Customize](#customize) section for
 </details>
 
 ## Filters
-<details><summary>You can modify variable values by applying filters. Multiple filters can be chained together. Nunjucks, the underlying engine, has a large number of <a href="https://mozilla.github.io/nunjucks/templating.html#builtin-filters">filters available</a> and Rename-CLI has a few of its own. Expand for more info.</summary>
+<details><summary>You can modify variable values by applying filters. Multiple filters can be chained together. Nunjucks, the underlying variable-replacement engine, has a large number of <a href="https://mozilla.github.io/nunjucks/templating.html#builtin-filters">filters available</a> and Rename-CLI has a few of its own. Expand for more info.</summary>
 <p>
 
 String case manipulation
@@ -116,7 +117,7 @@ bills file.pdf → MarysFile.pdf
 
   -----
 
-`match(RegExp[, flags, group num/name])` - match substring(s) using a regular expression. The only required parameter is the regular expression (as a string), it also allows for an optional parameter flags (a string containing any or all of the flags: gimsuy, more info [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/RegExp#Parameters)), and an option parameter of the group number or name. *Named groups cannot be used with the global flag.*
+`match(RegExp[, flags, group num/name])` - match substring(s) using a regular expression. The only required parameter is the regular expression (as a string), it also allows for an optional parameter `flags` (a string containing any or all of the flags: g, i, m, s, u, and y, more info [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/RegExp#Parameters)), and an optional parameter of the `group` number or name. *Named groups cannot be used with the global flag.*
 
 ```sh
 rename *ExpenseReport* "archive/{{ f | match('^.+(?=Expense)') }}/ExpenseReport.docx" --createdirs
@@ -125,18 +126,118 @@ JanuaryExpenseReport.docx → archive/January/ExpenseReport.docx
 MarchExpenseReport.docx → archive/March/ExpenseReport.docx
 ```
 
+-----
+
+`regexReplace(RegExp[, flags, replacement])` - replace the first regex match with the `replacement` string. To replace all regex matches, pass the `g` flag. `flags` and `replacement` are optional, the default value for replacement is an empty string.
+
+```sh
+rename test/* "{{ f | regexReplace('(^|e)e', 'g', 'E') }}"
+
+test/eight.txt → Eight.txt
+test/eighteen.txt → EightEn.txt
+test/eleven.txt → Eleven.txt
+```
+
 </p>
 </details>
 
 ## Customize
-<details><summary>Expand</summary>
+<details><summary>You can expand upon and overwrite much of the default functionality by creating your own variables and filters. Expand for more info.</summary>
 <p>
 
-You can expand and overwrite much of the default functionality by creating your own variables and filters.
-
 ### Variables
+The first time you run the rename command a file will be created at `~/.rename/userData.js`, this file can be edited to add new variables that you can access with `{{variableName}}` in your new file name. You can also override the built-in variables by naming your variable the same. The userData.js file contains some examples.
+
+```js
+// These are some helpful libraries already included in rename-cli
+// All the built-in nodejs libraries are also available
+// const exif = require('jpeg-exif'); // https://github.com/zhso/jpeg-exif
+// const fs = require('fs-extra'); // https://github.com/jprichardson/node-fs-extra
+// const n2f = require('num2fraction'); // https://github.com/yisibl/num2fraction
+// const moment = require('moment'); // https://momentjs.com/
+
+module.exports = function(fileObj, descriptions) {
+  let returnData = {};
+  let returnDescriptions = {};
+
+  // Put your code here to add properties to returnData
+  // this data will then be available in your output file name
+  // for example: returnData.myName = 'Your Name Here';
+  // or: returnData.backupDir = 'D:/backup';
+
+  // Optionally, you can describe a variable and have it show when printing help information
+  // add the same path as a variable to the returnDescriptions object with a string description
+  // for example: returnDescriptions.myName = 'My full name';
+  // or: returnDescriptions.backupDir = 'The path to my backup directory';
+
+  if (!descriptions) return returnData;
+  else return returnDescriptions;
+};
+```
+
+The fileObj that is passed to the function will look something like this:
+
+```
+{
+  root: '/',
+  dir: '/Users/myusername/Projects/node-rename-cli/test',
+  base: 'somefile.txt',
+  ext: '.txt',
+  name: 'somefile',
+  isDirectory: false,
+  newName: 'the-new-name-of-the-file',
+  newNameExt: '.txt',
+  options: {
+    regex: false,
+    keep: false,
+    force: false,
+    simulate: true,
+    prompt: false,
+    verbose: false,
+    noIndex: false,
+    noTrim: false,
+    ignoreDirectories: false,
+    noMove: false,
+    createDirs: false,
+    noExt: false,
+    noUndo: false,
+    sort: false
+  },
+  size: 21,
+  dateCreate: 1588887960364.1008,
+  dateModify: 1588887960364.2664
+}
+```
 
 ### Filters
+The first time you run the rename command a file will be created at `~/.rename/userFilters.js`, this file can be edited to add new filters that you can access with `{{someVariable | myNewFilter}}` in your new file name.
+
+One place custom filters can be really handy is if you have files that you often receive in some weird format and you then convert them to your own desired format. Instead of writing some long, complex new file name, just write your own filter and make the new file name `{{f|myCustomFilterName}}`. You can harness the power of code to do really complex things without having to write a complex command.
+
+Each filter should accept a parameter that contains the value of the variable passed to the filter (`str` in the example below). You can optionally include more of your own parameters as well. The function should also return a string that will then be inserted into the new file name (or passed to another filter if they are chained). The userFilters.js file contains some examples.
+
+```js
+// Uncomment the next line to create an alias for any of the default Nunjucks filters https://mozilla.github.io/nunjucks/templating.html#builtin-filters
+// const defaultFilters = require('../nunjucks/src/filters');
+// These are some helpful libraries already included in rename-cli
+// All the built-in nodejs libraries are also available
+// const exif = require('jpeg-exif'); // https://github.com/zhso/jpeg-exif
+// const fs = require('fs-extra'); // https://github.com/jprichardson/node-fs-extra
+// const n2f = require('num2fraction'); // https://github.com/yisibl/num2fraction
+// const moment = require('moment'); // https://momentjs.com/
+
+module.exports = {
+  // Create an alias for a built-in filter
+  // big: defaultFilters.upper,
+  // Create your own filter
+  // match: function(str, regexp, flags) {
+  //   if (regexp instanceof RegExp === false) {
+  //     regexp = new RegExp(regexp, flags);
+  //   }
+  //   return str.match(regexp);
+  // }
+};
+```
 
 </p>
 </details>

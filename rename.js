@@ -120,12 +120,11 @@ function getOperations(files, newFileName, options) {
     let newFileObj = { base: fileObj.newName + fileObj.newNameExt };
     if (options.noMove) {
       newFileObj.dir = fileObj.dir;
-      operationText += fileObj.newName + fileObj.newNameExt;
     } else {
       let newDirectory = replaceVariables(fileObj, newFileName.dir).replace(/^"|"$/g, '');
       newFileObj.dir = path.resolve(newDirectory);
-      operationText += path.format(newFileObj).replace(process.cwd(), '').replace(/^[\\/]/, '');
     }
+    operationText += path.format(newFileObj).replace(process.cwd(), '').replace(/^[\\/]/, '');
     let originalFileName = path.format({dir: fileObj.dir, base: fileObj.base});
     let outputFileName = path.format(newFileObj);
     let conflict = (operations.find(function(o) { return o.output === outputFileName; }) ? true : false);
@@ -207,7 +206,7 @@ function run(operations, options, exitWhenFinished) { // RENAME files
     if (!options.force && operation.original.toLowerCase() !== operation.output.toLowerCase() && pathExists.sync(operation.output)) { // If file already exists
       if (options.keep) {
         operation = keepFiles(operation);
-        renameFile(operation.original, operation.output, options.verbose);
+        renameFile(operation.original, operation.output, options.verbose, operation.text);
         completedOps.push(operation);
       } else {
         console.log('\n' + operation.text + '\n' + operation.text.split(' → ')[1] + ' already exists. What would you like to do?');
@@ -216,18 +215,18 @@ function run(operations, options, exitWhenFinished) { // RENAME files
         console.log('3) Skip');
         let response = prompt('Please input a number: ');
         if (response === '1') {
-          renameFile(operation.original, operation.output, options.verbose);
+          renameFile(operation.original, operation.output, options.verbose, operation.text);
           completedOps.push(operation);
         } else if (response === '2') {
           operation = keepFiles(operation);
-          renameFile(operation.original, operation.output, options.verbose);
+          renameFile(operation.original, operation.output, options.verbose, operation.text);
           completedOps.push(operation);
         }
       }
     } else if (!operation.directoryExists && operation.missingDirectory && operation.original.toLowerCase() !== operation.output.toLowerCase() && createdDirectories.indexOf(operation.missingDirectory) === -1) { // Directory doesn't exist
       if (options.force || options.createDirs) {
         fs.mkdirpSync(operation.missingDirectory);
-        renameFile(operation.original, operation.output, options.verbose);
+        renameFile(operation.original, operation.output, options.verbose, operation.text);
         completedOps.push(operation);
       } else {
         console.log('\n' + operation.text + '\n' + operation.missingDirectory + ' does not exist. What would you like to do?');
@@ -237,12 +236,12 @@ function run(operations, options, exitWhenFinished) { // RENAME files
         if (response === '1') {
           createdDirectories.push(operation.missingDirectory);
           fs.mkdirpSync(operation.missingDirectory);
-          renameFile(operation.original, operation.output, options.verbose);
+          renameFile(operation.original, operation.output, options.verbose, operation.text);
           completedOps.push(operation);
         }
       }
     } else { // file doesn't already exist and directory exists
-      renameFile(operation.original, operation.output, options.verbose);
+      renameFile(operation.original, operation.output, options.verbose, operation.text);
       completedOps.push(operation);
     }
   });
@@ -280,12 +279,12 @@ function undoRename() { // UNDO PREVIOUS RENAME
   });
 }
 
-function renameFile(oldName, newName, verbose) { // rename the file
+function renameFile(oldName, newName, verbose, operationText) { // rename the file
   oldName = oldName.replace(/\\\[/g, '[').replace(/\\\]/g, ']');
   newName = newName.replace(/\\\[/g, '[').replace(/\\\]/g, ']');
   if (pathExists.sync(oldName)) {
     fs.renameSync(oldName, newName);
-    if (verbose) console.log(`${oldName} renamed to ${newName}`);
+    if (verbose) console.log(operationText);
   } else {
     console.log(oldName + ' does not exist! Operation skipped.');
   }

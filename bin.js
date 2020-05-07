@@ -124,9 +124,9 @@ function renameFiles() {
   operations.filter(o => { return o.deprecationMessages; }).forEach(o => { o.deprecationMessages.forEach(m => { if (deprecationMessages.indexOf(m) === -1) deprecationMessages.push(m); }); });
   if (deprecationMessages && deprecationMessages.length > 0) deprecationMessages.forEach(m => { console.log(chalk.yellow(m)); });
   
-  // Print off renames if simulated, prompt, or verbose options used, or warn if there are file
+  // Print off renames if simulated, or prompt options used, or warn if there are file
   // conflicts and the force option isn't used.
-  if (options.simulate || options.prompt || options.verbose || (!options.force && !options.keep && hasConflicts) || (!options.force && !options.createDirs && hasMissingDirectories)) {
+  if (options.simulate || options.prompt || (!options.force && !options.keep && hasConflicts) || (!options.force && !options.createDirs && hasMissingDirectories)) {
     let conflicts = false;
     let existing = false;
     let missingDirectories = false;
