@@ -55,7 +55,7 @@ function getOperations(files, newFileName, options) {
     // Periods inside of replacement variables can be counted as file extensions, we don't want that
     if (newFileName.ext.includes('{{')) {
       newFileName.base = newFileName.base.replace(newFileNameRegexp, '').replace(/^"|"$/g, '');
-      newFileName.ext = replaceVariables(fileObj, newFileName.ext);
+      newFileName.ext = replaceVariables(fileObj, newFileName.ext).replace(/^"|"$/g, '');
     }
     if (newFileName.ext.indexOf('}}') > -1 || newFileName.ext.indexOf('%}') > -1) {
       newFileName.name = newFileName.base;
@@ -110,7 +110,7 @@ function getOperations(files, newFileName, options) {
       newFileObj.dir = fileObj.dir;
       operationText += fileObj.newName + fileObj.newNameExt;
     } else {
-      let newDirectory = replaceVariables(fileObj, newFileName.dir);
+      let newDirectory = replaceVariables(fileObj, newFileName.dir).replace(/^"|"$/g, '');
       newFileObj.dir = path.resolve(newDirectory);
       operationText += path.format(newFileObj).replace(process.cwd(), '').replace(/^[\\/]/, '');
     }

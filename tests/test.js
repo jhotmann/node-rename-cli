@@ -20,42 +20,62 @@ for (let i = 1; i < 31; i++) {
 let undoFile = os.homedir() + '/.rename/undo.json';
 if (!pathExists.sync(undoFile)) {
   try {
+    fs.ensureFileSync(undoFile);
     fs.writeJSONSync(undoFile, []);
   } catch(e) {
-    console.dir(e);
+    console.log('Could not write ' + undoFile);
   }
 }
 
 // run tests
-runCommand('rename test/one.txt test/one-renamed.txt');
-let oldFile = fs.existsSync('test/one.txt');
-let newFile = fs.existsSync('test/one-renamed.txt');
-describe('Rename a single file', function () {
-  it('rename test/one.txt test/one-renamed.txt', function () {
-    assert.equal(oldFile, false);
-    assert.equal(newFile, true);
-  });
-});
+runTest('rename test/one.txt test/one-renamed.txt', 'Rename a single file', 'test/one.txt', 'test/one-renamed.txt');
 
-runCommand('rename test/f*.txt test/multiple');
-oldFile = ['test/four.txt', 'test/five.txt', 'test/fourteen.txt', 'test/fifteen.txt'].some(f => fs.existsSync(f));
-newFile = ['test/multiple1.txt', 'test/multiple2.txt', 'test/multiple3.txt', 'test/multiple4.txt'].every(f => fs.existsSync(f));
-describe('Rename multiple files the same thing with appended index', function () {
-  it('rename test/f*.txt test/multiple', function () {
-    assert.equal(oldFile, false);
-    assert.equal(newFile, true);
-  });
-});
+runTest('rename test/f*.txt test/multiple',
+  'Rename multiple files the same thing with appended index',
+  ['test/four.txt', 'test/five.txt', 'test/fourteen.txt', 'test/fifteen.txt'],
+  ['test/multiple1.txt', 'test/multiple2.txt', 'test/multiple3.txt', 'test/multiple4.txt']);
+
+runTest('rename test/two.txt "{{p}}/{{f|upper}}.{{\'testing-stuff\'|camel}}"',
+  'Rename with variables and filters', 'test/two.txt', 'test/TWO.testingStuff');
+
+runTest('rename test/th* test/same --noindex -force', 'Force multiple files to be renamed the same',
+  ['test/three.txt', 'test/thirteen.txt'], 'test/same.txt');
+
+  runTest('rename  test/one-renamed.txt "test/another-dir/{{os.platform}}"', 'Move a file to a new directory',
+    'test/one-renamed.txt', 'test/another-dir/' + os.platform() + '.txt');
 
 // HELPER FUNCTIONS
 
-function runCommand(command) {
-  let argv = yargs.options(yargsOptions).parse(command.replace(/^rename /, '') + ' --noundo');
+function runTest(command, description, old, expected, undo) {
+  runCommand(command, undo);
+  let oldFile;
+  let newFile;
+  if (Array.isArray(old)) {
+    oldFile = old.some(f => fs.existsSync(f));
+  } else {
+    oldFile = fs.existsSync(old);
+  }
+  if (Array.isArray(expected)) {
+    newFile = expected.every(f => fs.existsSync(f));
+  } else {
+    newFile = fs.existsSync(expected);
+  }
+  describe(description, function () {
+    it(command, function () {
+      assert.equal(oldFile, false);
+      assert.equal(newFile, true);
+    });
+  });
+}
+
+function runCommand(command, undo) {
+  undo = undo || false;
+  let argv = yargs.options(yargsOptions).parse(command.replace(/^rename /, '') + (!undo ? ' --noundo' : ''));
   let newFileName = path.parse(argv._.pop());
   let files = rename.getFileArray(argv._);
   let options = rename.argvToOptions(argv);
   let operations = rename.getOperations(files, newFileName, options);
-  rename.run(operations, false);
+  rename.run(operations, options, false);
 }
 
 function inWords (num) {
