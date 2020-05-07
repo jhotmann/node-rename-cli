@@ -44,7 +44,7 @@ describe('Rename multiple files the same thing with appended index', function ()
 // HELPER FUNCTIONS
 
 function runCommand(command) {
-  let argv = yargs.options(yargsOptions).parse(command.replace(/^rename /, ''));
+  let argv = yargs.options(yargsOptions).parse(command.replace(/^rename /, '') + ' --noundo');
   let newFileName = path.parse(argv._.pop());
   let files = rename.getFileArray(argv._);
   let options = rename.argvToOptions(argv);

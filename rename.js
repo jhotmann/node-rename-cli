@@ -25,7 +25,6 @@ if (pathExists.sync(os.homedir() + '/.rename/userData.js')) {
   userData = function() { return {}; };
 }
 const UNDO_FILE = os.homedir() + '/.rename/undo.json';
-if (!pathExists.sync(UNDO_FILE)) fs.writeJSONSync(UNDO_FILE, []);
 
 function printData(file, options) { // prints the data available for a file
   if (!file) file = __filename;
@@ -152,7 +151,8 @@ function argvToOptions(argv) {
     ignoreDirectories: (argv.d ? true : false),
     noMove: (argv.nomove ? true : false),
     createDirs: (argv.createdirs ? true : false),
-    noExt: (argv.noext ? true : false)
+    noExt: (argv.noext ? true : false),
+    noUndo: (argv.noundo ? true : false)
   };
   if (options.noMove && options.createDirs) options.createDirs = false;
   return options;
@@ -234,7 +234,7 @@ function run(operations, options, exitWhenFinished) { // RENAME files
     }
   });
 
-  writeUndoFile(completedOps, (exitWhenFinished === true ? true : false));
+  if (!options.noUndo) writeUndoFile(completedOps, (exitWhenFinished === true ? true : false));
 }
 
 function getVariableList() {
@@ -253,25 +253,6 @@ function getVariableList() {
     }
   }).filter(v => v !== undefined).join('\n\n');
 }
-
-// function getReplacementsList() { // GET LIST OF REPLACEMENT VARIABLES
-//   let descIndex = 16;
-//   let returnText = '';
-//   // filter out deprecated replacement variables
-//   Object.keys(REPLACEMENTS).filter(r => { return REPLACEMENTS[r].deprecated === true ? false : true; }).forEach(function(key) {
-//     let value = REPLACEMENTS[key];
-//     let spaces = (descIndex - key.length - 4 > 0 ? descIndex - key.length - 4 : 1);
-//     returnText += ' {{' + key + '}}' + ' '.repeat(spaces) + value.name + ': ' + value.description + '\n';
-//     if (value.parameters) {
-//       returnText += ' '.repeat(descIndex + 3) + 'Parameters: ' + value.parameters.description + '\n';
-//     }
-//   });
-//   return returnText;
-// }
-
-// function getReplacements() {
-//   return REPLACEMENTS;
-// }
 
 function undoRename() { // UNDO PREVIOUS RENAME
   fs.readJSON(UNDO_FILE, (err, packageObj) => {
@@ -299,7 +280,7 @@ function renameFile(oldName, newName, verbose) { // rename the file
 
 function writeUndoFile(operations, exitWhenFinished) {
   fs.writeJSON(UNDO_FILE, operations, (err) => {
-    if (err) throw err;
+    if (err) console.dir(err);
     if (exitWhenFinished) process.exit(0);
   });
 }
