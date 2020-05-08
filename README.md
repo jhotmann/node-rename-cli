@@ -48,7 +48,7 @@ The new file name does not need to contain a file extension. If you do not speci
  ```-p```, ```--prompt```: Print all rename operations to be completed and confirm before proceeding    
  ```--notrim```: Do not trim whitespace at beginning or end of ouput file name    
  ```--nomove ```: Do not move files if their new file name points to a different directory  
- `--noext`: Do not automatically append a file extension if one isn't supplied (may be necessary if using a variable for an extension)  
+ ```--noext```: Do not automatically append a file extension if one isn't supplied (may be necessary if using a variable for an extension)  
  ```--createdirs```: Automatically create missing directories (cannot be used with `--nomove`)    
  ```--printdata```: Print the data available for a file
 

@@ -47,6 +47,9 @@ runTest('rename -v test/six* test/keep --noindex -k', 'Multiple files to be rena
 runTest('rename -v test/one-renamed.txt "test/another-dir/{{os.platform}}"', 'Move a file to a new directory',
     'test/one-renamed.txt', 'test/another-dir/' + os.platform() + '.txt');
 
+runTest('rename -v test/eight.txt "test/another-dir/{{f}}-notmoved" --nomove', 'Don\'t move a file to a new directory',
+    'test/eight.txt', 'test/eight-notmoved.txt');
+
 // HELPER FUNCTIONS
 
 function runTest(command, description, old, expected, undo) {
