@@ -28,6 +28,12 @@ jobs:
       with:
         name: binaries
         path: /home/runner/work/node-rename-cli/node-rename-cli/bin
+    - run: npm run-script chocolatey --if-present
+    - run: ls chocolatey/rename-cli/tools/
+    - name: Choco package
+      uses: crazy-max/ghaction-chocolatey@v1
+      with:
+        args: pack chocolatey/rename-cli/rename-cli.nuspec
   test_linux:
     runs-on: ubuntu-latest
     strategy:

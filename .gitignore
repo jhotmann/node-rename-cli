@@ -34,3 +34,8 @@ test
 
 # bin directory
 bin/*
+
+# chocolatey executable
+chocolatey/rename-cli/tools/rname.exe
+chocolatey/rename-cli/*.nupkg
+chocolatey/rename-cli/*.nuspec
