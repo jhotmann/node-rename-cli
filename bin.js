@@ -18,7 +18,7 @@ const rename = require('./rename');
 const opn = require('opn');
 const os = require('os');
 const path = require('path');
-const prompt = require('prompt-sync')();
+const readlineSync = require('readline-sync');
 const yargs = require('yargs');
 
 const argv = yargs
@@ -185,8 +185,7 @@ function renameFiles() {
       if (!hasConflicts && !missingDirectories) {
         console.log('');
       }
-      let conflictPrompt = prompt('Would you like to proceed? (y/n) ');
-      if (conflictPrompt === 'y') {
+      if (readlineSync.keyInYN('Would you like to proceed?')) {
         rename.run(operations, options);
       }
     }

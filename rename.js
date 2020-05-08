@@ -4,7 +4,7 @@ const nunjucks = require('nunjucks');
 const os = require('os');
 const path = require('path');
 const pathExists = require('path-exists');
-const prompt = require('prompt-sync')();
+const readlineSync = require('readline-sync');
 const traverse = require('traverse');
 const defaultData = require('./lib/data');
 
@@ -209,15 +209,11 @@ function run(operations, options, exitWhenFinished) { // RENAME files
         renameFile(operation.original, operation.output, options.verbose, operation.text);
         completedOps.push(operation);
       } else {
-        console.log('\n' + operation.text + '\n' + operation.text.split(' → ')[1] + ' already exists. What would you like to do?');
-        console.log('1) Overwrite the file');
-        console.log('2) Keep both files');
-        console.log('3) Skip');
-        let response = prompt('Please input a number: ');
-        if (response === '1') {
+        let response = readlineSync.keyInSelect(['Overwrite the file', 'Keep both files'], operation.text + '\n' + operation.text.split(' → ')[1] + ' already exists. What would you like to do?', {cancel: 'Skip'});
+        if (response === 0) {
           renameFile(operation.original, operation.output, options.verbose, operation.text);
           completedOps.push(operation);
-        } else if (response === '2') {
+        } else if (response === 1) {
           operation = keepFiles(operation);
           renameFile(operation.original, operation.output, options.verbose, operation.text);
           completedOps.push(operation);
@@ -229,11 +225,7 @@ function run(operations, options, exitWhenFinished) { // RENAME files
         renameFile(operation.original, operation.output, options.verbose, operation.text);
         completedOps.push(operation);
       } else {
-        console.log('\n' + operation.text + '\n' + operation.missingDirectory + ' does not exist. What would you like to do?');
-        console.log('1) Create Directory');
-        console.log('2) Skip');
-        let response = prompt('Please input a number: ');
-        if (response === '1') {
+        if (readlineSync.keyInYN(operation.text + '\n' + operation.missingDirectory + ' does not exist. Would you like to create it?')) {
           createdDirectories.push(operation.missingDirectory);
           fs.mkdirpSync(operation.missingDirectory);
           renameFile(operation.original, operation.output, options.verbose, operation.text);
