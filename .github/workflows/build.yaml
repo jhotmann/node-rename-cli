@@ -1,0 +1,103 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Build and Test
+
+on:
+  push:
+    branches: [ master, 7.0.0 ]
+  pull_request:
+    branches: [ master, 7.0.0 ]
+
+jobs:
+  build_windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci
+    - run: npm i -g pkg
+    - run: npm run-script build-win --if-present
+    - run: dir bin\
+    - run: npm run-script chocolatey --if-present
+    - run: dir chocolatey\rename-cli\tools\
+    - name: Choco package
+      uses: crazy-max/ghaction-chocolatey@v1
+      with:
+        args: pack chocolatey\rename-cli\rename-cli.nuspec
+    - uses: actions/upload-artifact@v2
+      with:
+        name: exe
+        path: bin\*.exe
+    - run: dir
+    - uses: actions/upload-artifact@v2
+      with:
+        name: nupkg
+        path: "*.nupkg"
+  build_unix:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci
+    - run: npm i -g pkg
+    - run: npm run-script build --if-present
+    - uses: actions/upload-artifact@v2
+      with:
+        name: unix-binaries
+        path: /home/runner/work/node-rename-cli/node-rename-cli/bin
+  test_linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm i -g mocha
+    - run: npm ci
+    - run: npm test
+  test_macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm i -g mocha
+    - run: npm ci
+    - run: npm test
+  test_windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node-version: [12.x, 14.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm i -g mocha
+    - run: npm ci
+    - run: npm test
+      working-directory: ${{ github.workspace }}

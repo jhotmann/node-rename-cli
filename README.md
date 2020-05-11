@@ -1,161 +1,257 @@
+<!--TODO document this https://apple.stackexchange.com/questions/40734/why-is-my-host-name-wrong-at-the-terminal-prompt-when-connected-to-a-public-wifi-->
 # Rename-CLI
 A cross-platform tool for renaming files quickly, especially multiple files at once.
 
+*Note* Version 7 has big changes from version 6, if you are staying on version 6 you can find the old documentation [here](docs/README6.md)
+
 ![gif preview](images/rename.gif)
 
+![Build and Test](https://github.com/jhotmann/node-rename-cli/workflows/Build%20and%20Test/badge.svg?branch=7.0.0) ![npm](https://img.shields.io/npm/dt/rename-cli?color=cb3837&label=npm%20downloads&logo=npm) ![Chocolatey](https://img.shields.io/chocolatey/dt/rename-cli?color=5c9fd8&label=chocolatey%20downloads&logo=chocolatey)
+
+## Installation
+The preferred installation method is through NPM or Homebrew
+
+**NPM:** (sudo if necessary)
+```sh
+npm i -g rename-cli@beta
+```
+
+**Homebrew:**
+```sh
+brew tap jhotmann/rename-cli
+brew install rename-cli
+```
+
+But you can install the binary through [Chocolatey]() or download from the [Releases]() page if you don't want to install Node.
+
+*Note: binary files are untested*
+
+chocolatey: `choco install rename-cli`  
+
 ## Features
+- Variable replacement and filtering of new file name (powered by [Nunjucks](https://mozilla.github.io/nunjucks/templating.html))
 - Glob file matching
 - Undo previous rename
-- Variable replacement in output file name
-- Ability to add your own variables
-- Auto-indexing when renaming multiple files
-- RegEx support for using part(s) of original file name
-- RegEx replace part(s) of the original file name
+- Customize by adding your own variables and filters
+- Auto-indexing when renaming multiple files to the same name
+- RegEx match/replace
 - Exif data support
 
 ## Usage
 ```rename [options] file(s) new-file-name```
 
+Or simply type `rename` for an interactive cli with live previews of rename operations.
+
 *Note: Windows users (or anyone who wants to type one less letter) can use rname instead of rename since the rename command already exists in Windows*
 
-The new file name does not need to contain a file extension. If you do not specifiy a file extension the original file extension will be preserved. *Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension.*
+The new file name does not need to contain a file extension. If you do not specifiy a file extension the original file extension will be preserved.
 
-### Options
+*Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension. I recommend using `.{{ext}}` to preserve the original file etension.*
+
+## Options
  ```-h```, ```--help```: Show help    
  ```-i```, ```--info```: View online help    
  ```-w```, ```--wizard```: Run a wizard to guide you through renaming files    
- ```-u```, ```--undo```: Undo previous rename operation    
- ```-r "RegEx"```: See [RegEx](#regex) section for more information    
- ```-k```, ```--keep```: Keep both files when output file name already exists (append a number)    
- ```-f```, ```--force```: Force overwrite without prompt when output file name already exists    
+ ```-u```, ```--undo```: Undo previous rename operation        
+ ```-k```, ```--keep```: Keep both files when new file name already exists (append a number)    
+ ```-f```, ```--force```: Force overwrite without prompt when new file name already exists and create any missing directories    
  ```-s```, ```--sim```: Simulate rename and just print new file names    
- ```-n```, ```--noindex```: Do not append an index when renaming multiple files. Use with caution.    
+ ```-n```, ```--noindex```: Do not append an index when renaming multiple files    
  ```-d```, ```--ignoredirectories```: Do not rename directories    
+ ```--sort```: Sort files before renaming. Parameter: `alphabet` (default), `date-create` (most recent first), `date-modified` (most recent first), `size` (biggest first). Include the word `reverse` before or after (use a dash or no space) to reverse the sort order.
  ```-p```, ```--prompt```: Print all rename operations to be completed and confirm before proceeding    
- ```-v```, ```--verbose```: Print all rename operations to be completed and confirm before proceeding with bonus variable logging    
  ```--notrim```: Do not trim whitespace at beginning or end of ouput file name    
  ```--nomove ```: Do not move files if their new file name points to a different directory  
+ ```--noext```: Do not automatically append a file extension if one isn't supplied (may be necessary if using a variable for an extension)  
  ```--createdirs```: Automatically create missing directories (cannot be used with `--nomove`)    
+ ```--printdata```: Print the data available for a file
+
+## Built-in Variables
+<details><summary>The new file name can contain any number of built-in and custom variables that will be replaced with their corresponding value. Expand for more info.</summary>
+<p>
+
+ `{{i}}` Index: The index of the file when renaming multiple files to the same name. If you do no include `{{i}}` in your new file name, the index will be appended to the end. Use the `--noindex` option to prevent auto-indexing.
+
+ `{{f}}` File name: The original name of the file.
+
+ `{{p}}` Parent directory: The name of the parent directory.
+
+ `{{isDirectory}}` Is directory: true/false. Useful for conditionally adding a file extension to files and not directories with `{% if isDirectory %}...`
+
+ `{{os.x}}` Operating System: Information about the OS/user. Replace `x` with `homedir`, `hostname`, `platform`, or `user`
+
+ `{{date.x}}` Dates: Insert a date. Replace `x` with `current` (the current date/time), `create` (the file's created date/time), `access` (the file's last accessed date/time) or `modify` (the file's last modified date/time)
+
+ `{{g}}` GUID: A pseudo-random globally unique identifier.
+
+ `{{exif.x}}` Exif: Photo Exif Information. Replace `x` with `iso`, `fnum`, `exposure`, `date`, `width`, or `height`
+
+You can also add your own variables. See the [Customize](#customize) section for more info.
+
+</p>
+</details>
+
+## Filters
+<details><summary>You can modify variable values by applying filters. Multiple filters can be chained together. Nunjucks, the underlying variable-replacement engine, has a large number of <a href="https://mozilla.github.io/nunjucks/templating.html#builtin-filters">filters available</a> and Rename-CLI has a few of its own. Expand for more info.</summary>
+<p>
+
+String case manipulation
+  - `lower` - all lowercase
+  - `upper` - ALL UPPERCASE
+  - `camel` - `something like-this → somethingLikeThis`
+  - `pascal` - `something like-this → SomethingLikeThis`
+
+-----
+
+`replace('something', 'replacement')` - replace a character or string with something else.
+
+```sh
+rename "bills file.pdf" "{{ f | replace('bill', 'mary') | pascal }}"
+
+bills file.pdf → MarysFile.pdf
+```
+
+-----
+
+`date` - format a date to a specific format, the default is `YYYYMMDD` if no parameter is passed. To use your own format, simply pass the format as a string parameter to the date filter. Formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/).
+
+  ```sh
+  rename *.txt "{{ date.current | date }}-{{f}}"
+
+  a.txt → 20200502-a.txt
+  b.txt → 20200502-b.txt
+  c.txt → 20200502-c.txt
+
+  rename *.txt "{{ date.current | date('MM-DD-YYYY') }}-{{f}}"
+
+  a.txt → 05-02-2020-a.txt
+  b.txt → 05-02-2020-b.txt
+  c.txt → 05-02-2020-c.txt
+  ```
+
+  -----
+
+`match(RegExp[, flags, group num/name])` - match substring(s) using a regular expression. The only required parameter is the regular expression (as a string), it also allows for an optional parameter `flags` (a string containing any or all of the flags: g, i, m, s, u, and y, more info [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/RegExp#Parameters)), and an optional parameter of the `group` number or name. *Named groups cannot be used with the global flag.*
+
+```sh
+rename *ExpenseReport* "archive/{{ f | match('^.+(?=Expense)') }}/ExpenseReport.docx" --createdirs
+
+JanuaryExpenseReport.docx → archive/January/ExpenseReport.docx
+MarchExpenseReport.docx → archive/March/ExpenseReport.docx
+```
+
+-----
+
+`regexReplace(RegExp[, flags, replacement])` - replace the first regex match with the `replacement` string. To replace all regex matches, pass the `g` flag. `flags` and `replacement` are optional, the default value for replacement is an empty string.
+
+```sh
+rename test/* "{{ f | regexReplace('(^|e)e', 'g', 'E') }}"
+
+test/eight.txt → Eight.txt
+test/eighteen.txt → EightEn.txt
+test/eleven.txt → Eleven.txt
+```
+
+</p>
+</details>
+
+## Customize
+<details><summary>You can expand upon and overwrite much of the default functionality by creating your own variables and filters. Expand for more info.</summary>
+<p>
 
 ### Variables
-The new file name can contain any number of variables that will be replaced with their value. Some variables can take parameters and will be indicated in their description. To pass a parameter to a variable, just use the variable name followed by a pipe and the parameter. **The output file name must be surrounded by quotes when using parameters.** See the first example below for how to use parameters.    
+The first time you run the rename command a file will be created at `~/.rename/userData.js`, this file can be edited to add new variables that you can access with `{{variableName}}` in your new file name. You can also override the built-in variables by naming your variable the same. The userData.js file contains some examples.
 
- `{{i}}` Index: The index of the file when renaming multiple files. Parameters: starting index, default is `1`: `{{i|starting index}}`
+```js
+// These are some helpful libraries already included in rename-cli
+// All the built-in nodejs libraries are also available
+// const exif = require('jpeg-exif'); // https://github.com/zhso/jpeg-exif
+// const fs = require('fs-extra'); // https://github.com/jprichardson/node-fs-extra
+// const n2f = require('num2fraction'); // https://github.com/yisibl/num2fraction
+// const moment = require('moment'); // https://momentjs.com/
 
- `{{f}}` File name: The original name of the file. Parameters: Param 1: `upper`, `lower`, `camel`, `pascal`, blank for unmodified, or `replace`. If replace, then Param2: search string and Param3: replace string: `{{f|modifier}}` or `{{f|replace|search|replacement}}`
+module.exports = function(fileObj, descriptions) {
+  let returnData = {};
+  let returnDescriptions = {};
 
- `{{p}}` Parent directory: The name of the parent directory. Parameters: Param 1: `upper`, `lower`, `camel`, `pascal`, blank for unmodified, or `replace`. If replace, then Param2: search string and Param3: replace string: `{{p|modifier}}` or `{{p|replace|search|replacement}}`
+  // Put your code here to add properties to returnData
+  // this data will then be available in your output file name
+  // for example: returnData.myName = 'Your Name Here';
+  // or: returnData.backupDir = 'D:/backup';
 
- `{{replace}}` Replace: Replace one string in the original file name with another. Parameters: The string to start with, a string to search for, and a string to replace it with: `{{replace|SomeStringOrVariable|search|replacement}}`
+  // Optionally, you can describe a variable and have it show when printing help information
+  // add the same path as a variable to the returnDescriptions object with a string description
+  // for example: returnDescriptions.myName = 'My full name';
+  // or: returnDescriptions.backupDir = 'The path to my backup directory';
 
- `{{r}}` RegEx: The specified match of the RegEx pattern(s) specified in `-r`. Parameters: the number of the regex match, default is `0`: `{{r|match number}}`
+  if (!descriptions) return returnData;
+  else return returnDescriptions;
+};
+```
 
- `{{ra}}` RegEx All: All matches of the RegEx pattern specified in `-r`. Parameters: separator character(s), default is none: `{{ra|separator}}`
+The fileObj that is passed to the function will look something like this:
 
- `{{rn}}` RegEx Not: Everything but the matches of the RegEx pattern specified in `-r`. Parameters: replacement character(s), default is none: `{{rn|separator}}`
+```
+{
+  root: '/',
+  dir: '/Users/myusername/Projects/node-rename-cli/test',
+  base: 'somefile.txt',
+  ext: '.txt',
+  name: 'somefile',
+  isDirectory: false,
+  newName: 'the-new-name-of-the-file',
+  newNameExt: '.txt',
+  options: {
+    regex: false,
+    keep: false,
+    force: false,
+    simulate: true,
+    prompt: false,
+    verbose: false,
+    noIndex: false,
+    noTrim: false,
+    ignoreDirectories: false,
+    noMove: false,
+    createDirs: false,
+    noExt: false,
+    noUndo: false,
+    sort: false
+  },
+  size: 21,
+  dateCreate: 1588887960364.1008,
+  dateModify: 1588887960364.2664
+}
+```
 
- `{{regex}}` RegEx v2: The match(es) of the RegEx pattern specified. Parameters: the regular expression, optional flags, and the number of the regex match or the joiner for all matches: `{{regex||regular expression||flags||number or joiner}}`
+### Filters
+The first time you run the rename command a file will be created at `~/.rename/userFilters.js`, this file can be edited to add new filters that you can access with `{{someVariable | myNewFilter}}` in your new file name.
 
- `{{date}}` Dates: Insert a date in a specific format. Parameters: the first parameter should be one of the following: `c[urrent]`, `cr[eate]`, `m[odify]`, or `a[ccess]`, and the second parameter is the date format which defaults to `yyyymmdd`: `{{date|type|format}}`
+One place custom filters can be really handy is if you have files that you often receive in some weird format and you then convert them to your own desired format. Instead of writing some long, complex new file name, just write your own filter and make the new file name `{{f|myCustomFilterName}}`. You can harness the power of code to do really complex things without having to write a complex command.
 
- `{{g}}` GUID: A globally unique identifier. Parameters: pattern using x's which will be replaced as random 16bit characters and y's which will be replaced with a, b, 8, or 9. Default is `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`: `{{g}}`
+Each filter should accept a parameter that contains the value of the variable passed to the filter (`str` in the example below). You can optionally include more of your own parameters as well. The function should also return a string that will then be inserted into the new file name (or passed to another filter if they are chained). The userFilters.js file contains some examples.
 
- `{{exif}}` Exif Information: Photo Exif Information. Parameters: the first parameter should be one of the following: i[so], f[num], e[xposure], d[ate], h[eight], or w[idth]. If the first parameter is d[ate], then also include another parameter for the date format: `{{exif|property|date format}}`    
+```js
+// Uncomment the next line to create an alias for any of the default Nunjucks filters https://mozilla.github.io/nunjucks/templating.html#builtin-filters
+// const defaultFilters = require('../nunjucks/src/filters');
+// These are some helpful libraries already included in rename-cli
+// All the built-in nodejs libraries are also available
+// const exif = require('jpeg-exif'); // https://github.com/zhso/jpeg-exif
+// const fs = require('fs-extra'); // https://github.com/jprichardson/node-fs-extra
+// const n2f = require('num2fraction'); // https://github.com/yisibl/num2fraction
+// const moment = require('moment'); // https://momentjs.com/
 
-### RegEx
-As of version `6.0.0` a new way of using regular expressions has been added. You can now simply add a `{{regex||regular expression||flags||number or joiner}}` replacement variable in the output file name to include the result(s) of the specified regular expression on the original file name. No need to use the `-r` option and no need for forward slashes in your regular expression.
+module.exports = {
+  // Create an alias for a built-in filter
+  // big: defaultFilters.upper,
+  // Create your own filter
+  // match: function(str, regexp, flags) {
+  //   if (regexp instanceof RegExp === false) {
+  //     regexp = new RegExp(regexp, flags);
+  //   }
+  //   return str.match(regexp);
+  // }
+};
+```
 
-*Old method*: When you specify a RegEx pattern with the `-r` option, the regular expression will be run against the original file name and the first match will be used to replace `{{r}}` in the output file name. You can also use `{{ra}}` in the output file name to keep all matches separated by a string you supply as an argument (or no argument to just append all matches together). If the regular expression fails to match, an empty string will be returned. **DO NOT** include the forward slashes in your RegEx pattern.
-
- **Regex Replace:**    
- You can write RegEx to replace characters you don't want. Let's say you want to replace all spaces in a file name with a `-`. To do this, use an output file name like this: `{{regex||[^ ]+||g||-}}`. The regular expression `[^ ]+` will look for multiple non-space characters in a row and join them with a `-`.  With the new `replace` option for the `{{f}}` variable you can simplify your output file name by using use the following: `{{f|replace| |-}}`.  In both of these examples, all spaces will be replaced by dashes, so if you had a file named ```My Text File.txt``` it would become ```My-Text-File.txt```.
-
- **Groups:**    
- You can write RegEx to capture one or more named groups and then use those groups in your output file name. The groups should be written like: ```(?<GroupName>regular expression here)```. If the RegEx groups do not return a match, the replacement variables in the output file name will be blank, so be sure to test with the -s option. See the third example below for how to use RegEx groups.
-
-## Examples
-
-1. Prepend date to file name. Date formatting options can be found [here](https://github.com/felixge/node-dateformat#mask-options).
-
-    ```sh
-    rename *.log "{{date|current|yyyymmdd}}{{f}}"
-      node.log → 20170303node.log
-      system.log → 20170303system.log
-    ```
-    ##### *Note: the default parameters for the date variable are current and yyyymmdd so in the above example you could just write ```rename *.log {{date}}{{f}}``` to achieve the same result. You can see default parameters for variables by typing ```rename -h```.*
-
-1. Rename all files the same and an index number will be appended. The index will be prepended with the correct number of zeroes to keep file order the same. For example, if you are renaming 150 files, the first index will be 001. You can change the starting index by adding the index variable with a parameter ```{{i|42}}``` If you don't want to include indexes use the ```-n``` option and you will be prompted for any file conflicts. Each file extension in a rename operation will have its own independent index.
-
-    ```sh
-    rename *.log test
-      node.log → test1.log
-      system.log → test2.log
-    ```
-
-1. Use RegEx groups to reuse sections of the original file name.
-
-    ```sh
-    rename -r "- (?<month>[A-Za-z]+) (?<year>\d{4})" --noindex ExpenseReport*.pdf "{{year}} - {{month}} Expense Report"
-      ExpenseReport - August 2016.pdf → 2016 - August Expense Report.pdf
-      ExpenseReport - March 2015.pdf → 2015 - March Expense Report.pdf
-      ExpenseReport - October 2015.pdf → 2015 - October Expense Report.pdf
-    ```
-
-1. Use all RegEx matches in the output file name separated by a space. RegEx explaination: ```\w+``` captures a string of 1 or more word characters (A-Z, a-z, and _), ```(?=.+\d{4})``` is a forward lookahead for a number of 4 digits (this means it will only find words before the number), and then ```|``` which means 'or', and finally ```\d{4}``` a number of 4 digits.
-
-    New Method:
-
-    ```sh
-    rename My.File.With.Periods.2016.more.info.txt "{{regex||\w+(?=.+\d{4})|\d{4}||g|| }}"
-
-      My.File.With.Periods.2016.more.info.txt → My File With Periods 2016.txt
-    ```
-
-    Old Method:
-
-    ```sh
-    rename -r "\w+(?=.+\d{4})|\d{4}" My.File.With.Periods.2016.more.info.txt "{{ra| }}"
-
-      My.File.With.Periods.2016.more.info.txt → My File With Periods 2016.txt
-    ```
-
-1. Use multiple RegEx options with `{{rn}}` to filter out different parts of the input file name in order. RegEx and parameter explaination: first .2016. and all following characters are replaced due to the first RegEx rule `-r "\.\d{4}\..+"`, then we match just the year with the second RegEx rule for use later with `{{r|1}}`, and then all periods are replaced due to the third RegEx rule. Finally we add back the year inside parenthesis. Since JavaScript uses 0 as the first index of an array, 1 finds the second regex match which is just the year as specified by ` -r "\d{4}"`.
-
-    ```sh
-    rename  -r "\.\d{4}\..+" -r "\d{4}" -r "\." My.File.With.Periods.2016.more.info.txt "{{rn| }}({{r|1}})"
-      My.File.With.Periods.2016.more.info.txt → My File With Periods (2016).txt
-    ```
-
-1. Extract Exif data from jpg images.
-
-    ```sh
-    rename *.jpg "{{exif|d}}-NewYorkCity{{i}}-ISO{{exif|iso}}-f{{exif|f}}-{{exif|e}}s"
-      DSC_5621.jpg → 20150927-NewYorkCity1-ISO250-f5.6-10s.jpg
-      DSC_5633.jpg → 20150928-NewYorkCity2-ISO125-f7.1-1/400s.jpg
-      DSC_5889.jpg → 20150930-NewYorkCity3-ISO125-f4.5-1/200s.jpg
-    ```
-
-## Installation
-1. Install NodeJS if you haven't already https://nodejs.org
-1. Type `npm install -g rename-cli` into your terminal or command window.
-
-## Adding custom replacement variables
-Whenever you run rename for the first time a file ```~/.rename/replacements.js``` or ```C:\Users\[username]\.rename\replacements.js``` is created. You can edit this file and add your own replacement variables **and override** the default replacements if desired. The user replacements.js file contains a decent amount of documentation in it and you can check out the default [replacements.js](lib/replacements.js) file for more examples. If you come up with some handy replacements, feel free to submit them to be included in the defaults with a pull request or submit it as an issue.
-
-## Libraries Used
-- yargs https://github.com/yargs/yargs
-- blessed https://github.com/chjj/blessed
-- globby https://github.com/sindresorhus/globby
-- fs-extra https://github.com/jprichardson/node-fs-extra
-- prompt-sync https://github.com/0x00A/prompt-sync
-- node-dateformat https://github.com/felixge/node-dateformat
-- named-js-regexp https://github.com/edvinv/named-js-regexp
-- num2fraction https://github.com/yisibl/num2fraction
-- jpeg-exif https://github.com/zhso/jpeg-exif
-- opn https://github.com/sindresorhus/opn
-- path-exists https://github.com/sindresorhus/path-exists
-- chalk https://github.com/chalk/chalk
-- cli-clear https://github.com/stevenvachon/cli-clear
-- inquirer https://github.com/SBoudrias/Inquirer.js
-- clipboardy https://github.com/sindresorhus/clipboardy
-- remark https://github.com/wooorm/remark
+</p>
+</details>

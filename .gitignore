@@ -33,4 +33,9 @@ npm-debug.log
 test
 
 # bin directory
-bin/*.*
+bin/*
+
+# chocolatey executable
+chocolatey/rename-cli/tools/rname.exe
+chocolatey/rename-cli/*.nupkg
+chocolatey/rename-cli/*.nuspec
