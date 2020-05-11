@@ -24,8 +24,9 @@ brew install rename-cli
 
 But you can install the binary through [Chocolatey]() or download from the [Releases]() page if you don't want to install Node.
 
+*Note: binary files are untested*
+
 chocolatey: `choco install rename-cli`  
-<!--homebrew: `coming soon!`-->
 
 ## Features
 - Variable replacement and filtering of new file name (powered by [Nunjucks](https://mozilla.github.io/nunjucks/templating.html))

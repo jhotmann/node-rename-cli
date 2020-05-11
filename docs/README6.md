@@ -1,7 +1,7 @@
 # Rename-CLI v6
 A cross-platform tool for renaming files quickly, especially multiple files at once.
 
-![gif preview](images/rename.gif)
+![gif preview](../images/rename.gif)
 
 ## Features
 - Glob file matching
