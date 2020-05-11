@@ -24,6 +24,7 @@ jobs:
     - run: npm ci
     - run: npm i -g pkg
     - run: npm run-script build-win --if-present
+    - run: dir bin\
     - uses: actions/upload-artifact@v2
       with:
         name: binaries
