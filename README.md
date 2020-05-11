@@ -6,13 +6,26 @@ A cross-platform tool for renaming files quickly, especially multiple files at o
 
 ![gif preview](images/rename.gif)
 
-![Build and Test](https://github.com/jhotmann/node-rename-cli/workflows/Build%20and%20Test/badge.svg?branch=7.0.0)
+![Build and Test](https://github.com/jhotmann/node-rename-cli/workflows/Build%20and%20Test/badge.svg?branch=7.0.0) ![npm](https://img.shields.io/npm/dt/rename-cli?color=cb3837&label=npm%20downloads&logo=npm) ![Chocolatey](https://img.shields.io/chocolatey/dt/rename-cli?color=5c9fd8&label=chocolatey%20downloads&logo=chocolatey)
 
 ## Installation
+The preferred installation method is through NPM or Homebrew
 
-npm: `npm i -g rename-cli@beta` (sudo if necessary)  
-<!--chocolatey: `coming soon!`  
-homebrew: `coming soon!`-->
+**NPM:** (sudo if necessary)
+```sh
+npm i -g rename-cli@beta
+```
+
+**Homebrew:**
+```sh
+brew tap jhotmann/rename-cli
+brew install rename-cli
+```
+
+But you can install the binary through [Chocolatey]() or download from the [Releases]() page if you don't want to install Node.
+
+chocolatey: `choco install rename-cli`  
+<!--homebrew: `coming soon!`-->
 
 ## Features
 - Variable replacement and filtering of new file name (powered by [Nunjucks](https://mozilla.github.io/nunjucks/templating.html))
@@ -102,13 +115,13 @@ bills file.pdf → MarysFile.pdf
 `date` - format a date to a specific format, the default is `YYYYMMDD` if no parameter is passed. To use your own format, simply pass the format as a string parameter to the date filter. Formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/).
 
   ```sh
-  rename *.txt "{{ d.now | date }}-{{f}}"
+  rename *.txt "{{ date.current | date }}-{{f}}"
 
   a.txt → 20200502-a.txt
   b.txt → 20200502-b.txt
   c.txt → 20200502-c.txt
 
-  rename *.txt "{{ d.now | date('MM-DD-YYYY') }}-{{f}}"
+  rename *.txt "{{ date.current | date('MM-DD-YYYY') }}-{{f}}"
 
   a.txt → 05-02-2020-a.txt
   b.txt → 05-02-2020-b.txt
