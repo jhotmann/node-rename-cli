@@ -10,7 +10,8 @@
   },
   "scripts": {
     "test": "mocha --file tests/test.js",
-    "build": "pkg --out-path bin -t latest-win-x64,latest-macos-x64,latest-linux-x64 .",
+    "build": "pkg --out-path bin -t latest-macos-x64,latest-linux-x64 .",
+    "build-win": "pkg --out-path bin -t latest-win-x64 .",
     "chocolatey": "node chocolatey/packager.js"
   },
   "author": "Jordan Hotmann",
