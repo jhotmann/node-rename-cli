@@ -35,11 +35,11 @@ jobs:
       with:
         name: exe
         path: bin\*.exe
-    - run: dir chocolatey\rename-cli\
+    - run: dir
     - uses: actions/upload-artifact@v2
       with:
         name: nupkg
-        path: chocolatey\rename-cli\*.nupkg
+        path: "*.nupkg"
   build_unix:
     runs-on: ubuntu-latest
     strategy:
