@@ -35,6 +35,7 @@ jobs:
       with:
         name: exe
         path: bin\*.exe
+    - run: dir chocolatey\rename-cli\
     - uses: actions/upload-artifact@v2
       with:
         name: nupkg
