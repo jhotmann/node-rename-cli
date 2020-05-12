@@ -6,7 +6,7 @@ A cross-platform tool for renaming files quickly, especially multiple files at o
 
 ![gif preview](images/rename.gif)
 
-![Build and Test](https://github.com/jhotmann/node-rename-cli/workflows/Build%20and%20Test/badge.svg?branch=7.0.0) ![npm](https://img.shields.io/npm/dt/rename-cli?color=cb3837&label=npm%20downloads&logo=npm) ![Chocolatey](https://img.shields.io/chocolatey/dt/rename-cli?color=5c9fd8&label=chocolatey%20downloads&logo=chocolatey)
+![Build and Test](https://github.com/jhotmann/node-rename-cli/workflows/Build%20and%20Test/badge.svg?branch=master) ![npm](https://img.shields.io/npm/dt/rename-cli?color=cb3837&label=npm%20downloads&logo=npm) ![Chocolatey](https://img.shields.io/chocolatey/dt/rename-cli?color=5c9fd8&label=chocolatey%20downloads&logo=chocolatey)
 
 ## Installation
 The preferred installation method is through NPM or Homebrew
@@ -22,11 +22,15 @@ brew tap jhotmann/rename-cli
 brew install rename-cli
 ```
 
-But you can install the binary through [Chocolatey]() or download from the [Releases]() page if you don't want to install Node.
+But you can install the binary through [Chocolatey](https://chocolatey.org/) or download from the [Releases](https://github.com/jhotmann/node-rename-cli/releases) page if you don't want to install Node.
 
 *Note: binary files are untested*
 
-chocolatey: `choco install rename-cli`  
+**Chocolatey:**
+
+```sh
+choco install rename-cli
+```  
 
 ## Features
 - Variable replacement and filtering of new file name (powered by [Nunjucks](https://mozilla.github.io/nunjucks/templating.html))
@@ -86,12 +90,14 @@ The new file name does not need to contain a file extension. If you do not speci
 
  `{{exif.x}}` Exif: Photo Exif Information. Replace `x` with `iso`, `fnum`, `exposure`, `date`, `width`, or `height`
 
+ `{{id3.x}}` ID3: Gets ID3 tags from MP3 files. Replace `x` with `title`, `artist`, `album`, `track`, `totalTracks`, or `year`
+
 You can also add your own variables. See the [Customize](#customize) section for more info.
 
 </p>
 </details>
 
-## Filters
+## Filters and Examples
 <details><summary>You can modify variable values by applying filters. Multiple filters can be chained together. Nunjucks, the underlying variable-replacement engine, has a large number of <a href="https://mozilla.github.io/nunjucks/templating.html#builtin-filters">filters available</a> and Rename-CLI has a few of its own. Expand for more info.</summary>
 <p>
 
@@ -150,6 +156,25 @@ rename test/* "{{ f | regexReplace('(^|e)e', 'g', 'E') }}"
 test/eight.txt → Eight.txt
 test/eighteen.txt → EightEn.txt
 test/eleven.txt → Eleven.txt
+```
+
+-----
+
+`padNumber(length)` - put leading zeroes in front of a number until it is `length` digits long. If `length` is a string it will use the string's length.
+
+```sh
+rename Absent\ Sounds/* "{{id3.year}}/{{id3.artist}}/{{id3.album}}/{{ id3.track | padNumber(id3.totalTracks) }} - {{id3.title}}.{{ext}}"
+
+Absent Sounds/Am I Alive.mp3 → 2014/From Indian Lakes/Absent Sounds/05 - Am I Alive.mp3
+Absent Sounds/Awful Things.mp3 → 2014/From Indian Lakes/Absent Sounds/07 - Awful Things.mp3
+Absent Sounds/Breathe, Desperately.mp3 → 2014/From Indian Lakes/Absent Sounds/03 - Breathe, Desperately.mp3
+Absent Sounds/Come In This Light.mp3 → 2014/From Indian Lakes/Absent Sounds/01 - Come In This Light.mp3
+Absent Sounds/Fog.mp3 → 2014/From Indian Lakes/Absent Sounds/10 - Fog.mp3
+Absent Sounds/Ghost.mp3 → 2014/From Indian Lakes/Absent Sounds/06 - Ghost.mp3
+Absent Sounds/Label This Love.mp3 → 2014/From Indian Lakes/Absent Sounds/02 - Label This Love.mp3
+Absent Sounds/Runner.mp3 → 2014/From Indian Lakes/Absent Sounds/08 - Runner.mp3
+Absent Sounds/Search For More.mp3 → 2014/From Indian Lakes/Absent Sounds/09 - Search For More.mp3
+Absent Sounds/Sleeping Limbs.mp3 → 2014/From Indian Lakes/Absent Sounds/04 - Sleeping Limbs.mp3
 ```
 
 </p>

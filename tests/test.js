@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 const assert = require('assert');
 const fs = require('fs-extra');
+const http = require('https');
 const os = require('os');
 const path = require('path');
 const pathExists = require('path-exists');
@@ -57,6 +58,29 @@ let day = now.getDate();
 if (day < 10) day = '0' + day;
 runTest(`rename -v --nomove test/seven* "{{ date.current | date('YYYY-MM-DD') }}"`, 'Rename multiple files to the same name and append index',
     ['test/seven.txt', 'test/seventeen.txt'], [`test/${now.getFullYear()}-${month}-${day}1.txt`, `test/${now.getFullYear()}-${month}-${day}2.txt`]);
+
+let musicFile = fs.createWriteStream("test/music.mp3");
+describe('Download and rename a mp3 file', function() {
+  it('rename test/music.mp3 --createdirs -v "test/{{id3.year}}/{{id3.artist}}/{{id3.track|padNumber(2)}} - {{id3.title}}.{{ext}}"', function(done) {
+    http.get("https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Scott_Holmes/Inspiring__Upbeat_Music/Scott_Holmes_-_04_-_Upbeat_Party.mp3", (res) => {
+      const { statusCode } = res;
+      if (statusCode === 200) {
+        let stream = res.pipe(musicFile);
+        stream.on('finish', function() {
+          runCommand('rename test/music.mp3 --createdirs -v "test/{{id3.year}}/{{id3.artist}}/{{id3.track|padNumber(2)}} - {{id3.title}}.{{ext}}"');
+          oldFile = fs.existsSync('test/music.mp3');
+          newFile = fs.existsSync('test/2019/Scott Holmes/04 - Upbeat Party.mp3');
+          assert.equal(oldFile, false);
+          assert.equal(newFile, true);
+          done();
+        });
+      } else {
+        console.dir(res);
+        done();
+      }
+    });
+  });
+});
 
 // HELPER FUNCTIONS
 
