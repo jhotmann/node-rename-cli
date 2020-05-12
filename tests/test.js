@@ -59,6 +59,10 @@ if (day < 10) day = '0' + day;
 runTest(`rename -v --nomove test/seven* "{{ date.current | date('YYYY-MM-DD') }}"`, 'Rename multiple files to the same name and append index',
     ['test/seven.txt', 'test/seventeen.txt'], [`test/${now.getFullYear()}-${month}-${day}1.txt`, `test/${now.getFullYear()}-${month}-${day}2.txt`]);
 
+runTest('rename -v -d test/nine.txt test/another-dir "test/{{p}}-99"', 'Test ignore directory option', 'test/nine.txt', ['test/test-99.txt', 'test/another-dir']);
+
+runTest('rename -v test/ten.txt "test/asdf.{{os.user}}" --noext', 'Test --noext option', 'test/ten.txt', 'test/asdf.' + os.userInfo().username);
+
 let musicFile = fs.createWriteStream("test/music.mp3");
 describe('Download and rename a mp3 file', function() {
   it('rename test/music.mp3 --createdirs -v "test/{{id3.year}}/{{id3.artist}}/{{id3.track|padNumber(2)}} - {{id3.title}}.{{ext}}"', function(done) {

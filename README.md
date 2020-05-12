@@ -102,10 +102,10 @@ You can also add your own variables. See the [Customize](#customize) section for
 <p>
 
 String case manipulation
-  - `lower` - all lowercase
-  - `upper` - ALL UPPERCASE
-  - `camel` - `something like-this → somethingLikeThis`
-  - `pascal` - `something like-this → SomethingLikeThis`
+  - `{{f|lower}}` - `Something Like This.txt → something like this.txt`
+  - `{{f|upper}}` - `Something Like This.txt → SOMETHING LIKE THIS.txt`
+  - `{{f|camel}}` - `Something Like This.txt → somethingLikeThis.txt`
+  - `{{f|pascal}}` - `Something Like This.txt → SomethingLikeThis.txt`
 
 -----
 
