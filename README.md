@@ -39,7 +39,7 @@ choco install rename-cli
 - Customize by adding your own variables and filters
 - Auto-indexing when renaming multiple files to the same name
 - RegEx match/replace
-- Exif data support
+- Exif and ID3 tag support
 
 ## Usage
 ```rename [options] file(s) new-file-name```
