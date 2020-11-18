@@ -1,6 +1,6 @@
 {
     "parserOptions": {
-        "ecmaVersion": 6,
+        "ecmaVersion": 2020,
         "sourceType": "module",
         "ecmaFeatures": {
             "jsx": true,
@@ -8,17 +8,19 @@
             "experimentalObjectRestSpread": true
         }
     },
-    "extends": ["eslint:recommended", "plugin:mocha/recommended"],
+    "extends": ["eslint:recommended", "plugin:jest/recommended"],
     "rules": {
         "semi": 2,
         "eqeqeq": ["warn", "smart"],
         "no-unused-vars": 1,
-        "no-console": 0
+        "no-console": 0,
+        "no-prototype-builtins": "off"
     },
     "plugins": [
-        "mocha"
+        "jest"
     ],
     "env": {
-        "node": true
+        "node": true,
+        "es6": true
     }
 }

@@ -1,125 +1,240 @@
-/* eslint-disable no-undef */
-const assert = require('assert');
+const async = require('async');
+const download = require('download');
 const fs = require('fs-extra');
-const http = require('https');
 const os = require('os');
 const path = require('path');
-const pathExists = require('path-exists');
-const rename = require('../rename');
 const yargs = require('yargs');
-const yargsOptions = require('../lib/yargsOptions');
 
-// remove test directory
-fs.removeSync('./test');
-// create test files/directories
-fs.ensureDirSync('test');
-fs.ensureDirSync('test/another-dir');
-for (let i = 1; i < 31; i++) {
-  let num = inWords(i);
-  fs.writeFileSync((i < 20 ? 'test/' : 'test/another-dir/') + num.trim().replace(' ', '-') + '.txt', 'file ' + num.trim(), 'utf8');
-}
-let undoFile = os.homedir() + '/.rename/undo.json';
-if (!pathExists.sync(undoFile)) {
-  try {
-    fs.ensureFileSync(undoFile);
-    fs.writeJSONSync(undoFile, []);
-  } catch(e) {
-    console.log('Could not write ' + undoFile);
-  }
-}
+const database = require('./src/database');
+const yargsOptions = require('./lib/yargsOptions');
 
-// run tests
-runTest('rename -v test/one.txt test/one-renamed.txt', 'Rename a single file', 'test/one.txt', 'test/one-renamed.txt');
+const { Batch } = require('./src/batch');
 
-runTest('rename -v test/f*.txt test/multiple',
-  'Rename multiple files the same thing with appended index',
-  ['test/four.txt', 'test/five.txt', 'test/fourteen.txt', 'test/fifteen.txt'],
-  ['test/multiple1.txt', 'test/multiple2.txt', 'test/multiple3.txt', 'test/multiple4.txt']);
+let SEQUELIZE;
 
-runTest('rename -v test/two.txt "{{p}}/{{f|upper}}.{{\'testing-stuff\'|camel}}"',
-  'Rename with variables and filters', 'test/two.txt', 'test/TWO.testingStuff');
+beforeAll(async () => {
+  // remove test directory
+  await fs.remove('./test');
+  // create test files/directories
+  await fs.ensureDir('test');
+  await fs.ensureDir('test/another-dir');
+  await async.times(31, async (i) => {
+    if (i === 0) return;
+    let num = inWords(i);
+    let dir = `${i < 20 ? 'test/' : 'test/another-dir/'}`;
+    let fileName = `${num.trim().replace(' ', '-')}.txt`;
+    await fs.writeFile(`${dir}${fileName}`, `file ${num.trim()}`, 'utf8');
+  });
+  SEQUELIZE = await database.initTest();
+});
 
-runTest('rename -v test/th* test/same --noindex -force', 'Force multiple files to be renamed the same',
-  ['test/three.txt', 'test/thirteen.txt'], 'test/same.txt');
+afterAll(async () => {
+  await fs.remove(path.join(os.homedir(), '.rename', 'test.db'));
+});
 
-runTest('rename -v test/six* test/keep --noindex -k', 'Multiple files to be renamed the same but with keep option',
-  ['test/six.txt', 'test/sixteen.txt'], ['test/keep.txt', 'test/keep-1.txt']);
+describe('Rename a single file: rename test/one.txt test/one-renamed.txt', () => {
+  const oldFiles = ['test/one.txt'];
+  const newFiles = ['test/one-renamed.txt'];
+  beforeAll(async () => {
+    await runCommand('rename test/one.txt test/one-renamed.txt');
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
+  });
+});
 
-runTest('rename -v test/one-renamed.txt "test/another-dir/{{os.platform}}"', 'Move a file to a new directory',
-    'test/one-renamed.txt', 'test/another-dir/' + os.platform() + '.txt');
+describe('Rename multiple files the same thing with appended index: rename test/f*.txt test/multiple', () => {
+  const oldFiles = ['test/four.txt', 'test/five.txt', 'test/fourteen.txt', 'test/fifteen.txt'];
+  const newFiles = ['test/multiple1.txt', 'test/multiple2.txt', 'test/multiple3.txt', 'test/multiple4.txt'];
+  beforeAll(async () => {
+    await runCommand('rename test/f*.txt test/multiple');
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
+  });
+});
 
-runTest('rename -v test/eight.txt "test/another-dir/{{f}}-notmoved" --nomove', 'Don\'t move a file to a new directory',
-    'test/eight.txt', 'test/eight-notmoved.txt');
+describe('Rename multiple files the same thing with appended index and file extension specified and sort option: rename test/multiple* test/twelve.txt test/multiple.log', () => {
+  const oldFiles = ['test/multiple1.txt', 'test/multiple2.txt', 'test/multiple3.txt', 'test/multiple4.txt', 'test/twelve.txt'];
+  const newFiles = ['test/multiple1.log', 'test/multiple2.log', 'test/multiple3.log', 'test/multiple4.log', 'test/multiple5.log'];
+  let originalContent;
+  beforeAll(async () => {
+    originalContent = await fs.readFile('test/twelve.txt', 'utf8');
+    await runCommand('rename --sort reverse-alphabet test/multiple* test/twelve.txt test/multiple.log');
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
+  });
+  test(`New file has correct content`, async () => {
+    const result = await fs.readFile('test/multiple1.log', 'utf8');
+    expect(result).toBe(originalContent);
+  });
+});
 
-let now = new Date();
-let month = now.getMonth() + 1;
-if (month < 10) month = '0' + month;
-let day = now.getDate();
-if (day < 10) day = '0' + day;
-runTest(`rename -v --nomove test/seven* "{{ date.current | date('YYYY-MM-DD') }}"`, 'Rename multiple files to the same name and append index',
-    ['test/seven.txt', 'test/seventeen.txt'], [`test/${now.getFullYear()}-${month}-${day}1.txt`, `test/${now.getFullYear()}-${month}-${day}2.txt`]);
+describe('Rename with variables and filters: rename test/two.txt "{{p}}/{{f|upper}}.{{\'testing-stuff\'|camel}}"', () => {
+  const oldFiles = ['test/two.txt'];
+  const newFiles = ['test/TWO.testingStuff'];
+  beforeAll(async () => {
+    await runCommand(`rename test/two.txt "{{p}}/{{f|upper}}.{{'testing-stuff'|camel}}"`);
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
+  });
+  test(`New files has correct case`, async () => {
+    const files = await fs.readdir('test');
+    expect(files.indexOf('TWO.testingStuff')).toBeGreaterThan(-1);
+  });
+});
 
-runTest('rename -v -d test/nine.txt test/another-dir "test/{{p}}-99"', 'Test ignore directory option', 'test/nine.txt', ['test/test-99.txt', 'test/another-dir']);
+describe('Force multiple files to be renamed the same: rename test/th* test/same --noindex -force', () => {
+  const oldFiles = ['test/three.txt', 'test/thirteen.txt'];
+  const newFiles = ['test/same.txt'];
+  beforeAll(async () => {
+    await runCommand('rename test/th* test/same --noindex -force');
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
+  });
+  test(`New file has correct content`, async () => {
+    const result = await fs.readFile('test/same.txt', 'utf8');
+    expect(result).toMatch(/^file three.*/);
+  });
+});
 
-runTest('rename -v test/ten.txt "test/asdf.{{os.user}}" --noext', 'Test --noext option', 'test/ten.txt', 'test/asdf.' + os.userInfo().username);
+describe('Multiple files to be renamed the same but with keep option: rename test/six* test/keep --noindex -k', () => {
+  const oldFiles = ['test/six.txt', 'test/sixteen.txt'];
+  const newFiles = ['test/keep.txt', 'test/keep-1.txt'];
+  beforeAll(async () => {
+    await runCommand('rename test/six* test/keep --noindex -k');
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
+  });
+});
 
-let musicFile = fs.createWriteStream("test/music.mp3");
-describe('Download and rename a mp3 file', function() {
-  it('rename test/music.mp3 --createdirs -v "test/{{id3.year}}/{{id3.artist}}/{{id3.track|padNumber(2)}} - {{id3.title}}.{{ext}}"', function(done) {
-    http.get("https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Scott_Holmes/Inspiring__Upbeat_Music/Scott_Holmes_-_04_-_Upbeat_Party.mp3", (res) => {
-      const { statusCode } = res;
-      if (statusCode === 200) {
-        let stream = res.pipe(musicFile);
-        stream.on('finish', function() {
-          runCommand('rename test/music.mp3 --createdirs -v "test/{{id3.year}}/{{id3.artist}}/{{id3.track|padNumber(2)}} - {{id3.title}}.{{ext}}"');
-          oldFile = fs.existsSync('test/music.mp3');
-          newFile = fs.existsSync('test/2019/Scott Holmes/04 - Upbeat Party.mp3');
-          assert.equal(oldFile, false);
-          assert.equal(newFile, true);
-          done();
-        });
-      } else {
-        console.dir(res);
-        done();
-      }
-    });
+describe('Move a file to a new directory: rename test/one-renamed.txt "test/another-dir/{{os.platform}}"', () => {
+  const oldFiles = ['test/one-renamed.txt'];
+  const newFiles = [`test/another-dir/${os.platform()}.txt`];
+  beforeAll(async () => {
+    await runCommand('rename test/one-renamed.txt "test/another-dir/{{os.platform}}"');
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
+  });
+});
+
+describe(`Don't move a file to a new directory: rename test/eight.txt "test/another-dir/{{f}}-notmoved" --nomove`, () => {
+  const oldFiles = ['test/eight.txt'];
+  const newFiles = ['test/eight-notmoved.txt'];
+  beforeAll(async () => {
+    await runCommand('rename test/eight.txt "test/another-dir/{{f}}-notmoved" --nomove');
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
+  });
+});
+
+describe(`Rename multiple files to the same date and append index: rename --nomove test/seven* "{{ date.current | date('YYYY-MM-DD') }}"`, () => {
+  const now = new Date();
+  const nowFormatted = `${now.getFullYear()}-${now.getMonth() < 9 ? '0' : ''}${now.getMonth() + 1}-${now.getDate() < 10 ? '0' : ''}${now.getDate()}`;
+  const oldFiles = ['test/seven.txt', 'test/seventeen.txt'];
+  const newFiles = [`test/${nowFormatted}1.txt`, `test/${nowFormatted}2.txt`];
+  beforeAll(async () => {
+    await runCommand(`rename --nomove test/seven* "{{ date.current | date('YYYY-MM-DD') }}"`);
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
+  });
+});
+
+describe(`Test --noext option: rename test/ten.txt "test/asdf{{os.user}}" --noext`, () => {
+  const oldFiles = ['test/ten.txt'];
+  const newFiles = [`test/asdf${os.userInfo().username}`];
+  beforeAll(async () => {
+    await runCommand('rename test/ten.txt "test/asdf{{os.user}}" --noext');
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
+  });
+});
+
+describe(`Download and rename a mp3 file: rename test/music.mp3 --createdirs "test/{{id3.year}}/{{id3.artist}}/{{id3.track|padNumber(2)}} - {{id3.title}}.{{ext}}"`, () => {
+  const oldFiles = ['test/music.mp3'];
+  const newFiles = ['test/2019/Scott Holmes/04 - Upbeat Party.mp3'];
+  beforeAll(async () => {
+    await fs.writeFile('test/music.mp3', await download('https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Scott_Holmes/Inspiring__Upbeat_Music/Scott_Holmes_-_04_-_Upbeat_Party.mp3'));
+    await runCommand('rename test/music.mp3 --createdirs "test/{{id3.year}}/{{id3.artist}}/{{id3.track|padNumber(2)}} - {{id3.title}}{{ext}}"');
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
   });
 });
 
 // HELPER FUNCTIONS
 
-function runTest(command, description, old, expected, undo) {
-  runCommand(command, undo);
-  let oldFile;
-  let newFile;
-  if (Array.isArray(old)) {
-    oldFile = old.some(f => fs.existsSync(f));
-  } else {
-    oldFile = fs.existsSync(old);
-  }
-  if (Array.isArray(expected)) {
-    newFile = expected.every(f => fs.existsSync(f));
-  } else {
-    newFile = fs.existsSync(expected);
-  }
-  describe(description, function () {
-    it(command, function () {
-      assert.equal(oldFile, false);
-      assert.equal(newFile, true);
-    });
-  });
-}
-
-function runCommand(command, undo) {
+async function runCommand(command, undo) {
   undo = undo || false;
-  let argv = yargs.options(yargsOptions).parse(command.replace(/^rename /, '') + (!undo ? ' --noundo' : ''));
-  let newFileName = path.parse(argv._.pop());
-  let files = rename.getFileArray(argv._);
-  let options = rename.argvToOptions(argv);
-  let operations = rename.getOperations(files, newFileName, options);
-  rename.run(operations, options, false);
+  let argv = yargs.options(yargsOptions).parse(`${command.replace(/^rename /, '')}${!undo ? ' --noundo' : ''}`);
+  let batch = new Batch(argv, null, SEQUELIZE);
+  await batch.complete();
 }
 
+/* eslint-disable eqeqeq */
 function inWords (num) {
   let a = ['','one ','two ','three ','four ', 'five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
   let b = ['', '', 'twenty','thirty','forty','fifty', 'sixty','seventy','eighty','ninety'];

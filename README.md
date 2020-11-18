@@ -50,7 +50,7 @@ Or simply type `rename` for an interactive cli with live previews of rename oper
 
 The new file name does not need to contain a file extension. If you do not specifiy a file extension the original file extension will be preserved.
 
-*Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension. I recommend using `.{{ext}}` to preserve the original file etension.*
+*Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension. I recommend using `{{ext}}` (which includes the period) to preserve the original file etension.*
 
 ## Options
  ```-h```, ```--help```: Show help    
@@ -163,7 +163,7 @@ test/eleven.txt → Eleven.txt
 `padNumber(length)` - put leading zeroes in front of a number until it is `length` digits long. If `length` is a string it will use the string's length.
 
 ```sh
-rename Absent\ Sounds/* "{{id3.year}}/{{id3.artist}}/{{id3.album}}/{{ id3.track | padNumber(id3.totalTracks) }} - {{id3.title}}.{{ext}}"
+rename Absent\ Sounds/* "{{id3.year}}/{{id3.artist}}/{{id3.album}}/{{ id3.track | padNumber(id3.totalTracks) }} - {{id3.title}}{{ext}}"
 
 Absent Sounds/Am I Alive.mp3 → 2014/From Indian Lakes/Absent Sounds/05 - Am I Alive.mp3
 Absent Sounds/Awful Things.mp3 → 2014/From Indian Lakes/Absent Sounds/07 - Awful Things.mp3
