@@ -90,6 +90,7 @@ module.exports = async function(sequelize) {
     let content;
     try {
       await BATCH.replaceVariables();
+      await BATCH.indexAndFindConflicts();
       content = BATCH.operations.map((o) => { return o.getOperationText(); });
     } catch (ex) {
       content = ['Invalid command'];

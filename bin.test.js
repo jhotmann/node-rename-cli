@@ -31,7 +31,9 @@ beforeAll(async () => {
 describe('Rename a single file: rename test/one.txt test/one-renamed.txt', () => {
   const oldFiles = ['test/one.txt'];
   const newFiles = ['test/one-renamed.txt'];
+  let originalContent;
   beforeAll(async () => {
+    originalContent = await fs.readFile('test/one.txt', 'utf8');
     await runCommand('rename test/one.txt test/one-renamed.txt');
   });
   test(`Old files don't exist`, async () => {
@@ -41,6 +43,10 @@ describe('Rename a single file: rename test/one.txt test/one-renamed.txt', () =>
   test(`New files do exist`, async () => {
     const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
     await expect(result).toBe(true);
+  });
+  test(`New file has correct content`, async () => {
+    const result = await fs.readFile('test/one-renamed.txt', 'utf8');
+    expect(result).toBe(originalContent);
   });
 });
 
@@ -192,7 +198,39 @@ describe(`Test --noext option: rename test/ten.txt "test/asdf{{os.user}}" --noex
   const oldFiles = ['test/ten.txt'];
   const newFiles = [`test/asdf${os.userInfo().username}`];
   beforeAll(async () => {
-    await runCommand('rename test/ten.txt "test/asdf{{os.user}}" --noext');
+    await runCommand('rename test/ten.txt "test/asdf{{os.user}}" --noext', true);
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
+  });
+});
+
+describe(`Test undo last rename: rename -u`, () => {
+  const newFiles = ['test/ten.txt'];
+  const oldFiles = [`test/asdf${os.userInfo().username}`];
+  beforeAll(async () => {
+    // TODO: update when there is a better API for this
+    const lastBatch = await SEQUELIZE.models.Batch.findOne({
+      where: {
+        undone: false
+      },
+      order: [[ 'createdAt', 'DESC' ]]
+    });
+    if (lastBatch !== null) {
+      const ops = await SEQUELIZE.models.Op.findAll({
+        where: {
+          BatchId: lastBatch.id
+        }
+      });
+      async.eachSeries(ops, async (o) => { await fs.rename(o.output, o.input); });
+      lastBatch.undone = true;
+      await lastBatch.save();
+    }
   });
   test(`Old files don't exist`, async () => {
     const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });

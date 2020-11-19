@@ -22,11 +22,10 @@ brew tap jhotmann/rename-cli
 brew install rename-cli
 ```
 
-But you can install the binary through [Chocolatey](https://chocolatey.org/) or download from the [Releases](https://github.com/jhotmann/node-rename-cli/releases) page if you don't want to install Node.
+**Chocolatey:**  
+Windows users can install the binary through [Chocolatey](https://chocolatey.org/) or download from the [Releases](https://github.com/jhotmann/node-rename-cli/releases) page if you don't want to install Node.
 
 *Note: binary files are untested*
-
-**Chocolatey:**
 
 ```sh
 choco install rename-cli

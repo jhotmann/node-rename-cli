@@ -53,14 +53,14 @@ module.exports.Batch = class Batch {
       if (filteredOps.length > 1 && this.options.verbose) console.log(`${filteredOps.length} operations have the same output path: ${d}`);
       for (let i = 0; i < filteredOps.length; i++) {
         // if this is a unique output, don't put an index
-        if (filteredOps.length === 1) { filteredOps[i].setIndex(''); }
+        if (filteredOps.length === 1) { await filteredOps[i].setIndex(''); }
         // if there are multiple, append the index or put the index wherever {{i}}
         else { // going to have a file conflict
           if (this.options.noIndex) {
-            filteredOps[i].setIndex('');
+            await filteredOps[i].setIndex('');
             filteredOps[i].setConflict(true);
           } else { // set the index to avoid a conflict
-            filteredOps[i].setIndex(util.leftPad(i + 1, filteredOps.length, '0'));
+            await filteredOps[i].setIndex(util.leftPad(i + 1, filteredOps.length, '0'));
           }
         }
       }
@@ -68,7 +68,7 @@ module.exports.Batch = class Batch {
   }
 
   async execute() {
-    if (!this.options.simulate) { // create a batch in the database
+    if (!this.options.simulate && !this.options.noUndo) { // create a batch in the database
       let batch = this.sequelize.models.Batch.build({ command: JSON.stringify(this.command), cwd: process.cwd() });
       await batch.save();
       this.batchId = batch.id;
