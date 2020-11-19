@@ -28,10 +28,6 @@ beforeAll(async () => {
   SEQUELIZE = await database.initTest();
 });
 
-afterAll(async () => {
-  await fs.remove(path.join(os.homedir(), '.rename', 'test.db'));
-});
-
 describe('Rename a single file: rename test/one.txt test/one-renamed.txt', () => {
   const oldFiles = ['test/one.txt'];
   const newFiles = ['test/one-renamed.txt'];
