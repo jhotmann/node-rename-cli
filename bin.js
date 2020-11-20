@@ -41,6 +41,7 @@ const util = require('./src/util');
   const { Operation } = require('./src/operation');
   const { Options } = require('./src/options');
   const { Batch } = require('./src/batch');
+  const { History } = require('./src/history');
 
   // Parse command line arguments
   const argv = yargs
@@ -61,6 +62,11 @@ const util = require('./src/util');
     if (process.platform !== 'win32') {
       process.exit(0);
     }
+  } else if (options.history !== false) {
+    options.history = options.history || 10;
+    let history = new History(sequelize, options.history, !options.noUndo);
+    await history.getBatches();
+    await history.display();
   } else if (options.undo) { // undo previous rename
     const lastBatch = await sequelize.models.Batch.findOne({
       where: {
