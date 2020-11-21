@@ -68,28 +68,15 @@ const util = require('./src/util');
     await history.getBatches();
     await history.display();
   } else if (options.undo) { // undo previous rename
-    const lastBatch = await sequelize.models.Batch.findOne({
-      where: {
-        undone: false
-      },
-      order: [[ 'createdAt', 'DESC' ]]
-    });
-    if (lastBatch === null) {
+    let history = new History(sequelize, 1, false);
+    await history.getBatches();
+    if (history.batches.length === 0) {
       console.log(chalk`{red No batches found that can be undone}`);
       process.exit(1);
     }
-    const ops = await sequelize.models.Op.findAll({
-      where: {
-        BatchId: lastBatch.id
-      }
-    });
-    console.log(`Undoing '${util.argvToString(JSON.parse(lastBatch.command))}' (${ops.length} operation${ops.length === 1 ? '' : 's'})`);
-    async.eachSeries(ops, async (o) => {
-      if (options.verbose) console.log(`${o.output.replace(process.cwd(), '')} → ${o.input.replace(process.cwd(), '')}`);
-      await fs.rename(o.output, o.input);
-    });
-    lastBatch.undone = true;
-    await lastBatch.save();
+    const lastBatch = history.batches[0];
+    console.log(`Undoing '${util.argvToString(JSON.parse(lastBatch.command))}' (${lastBatch.Ops.length} operation${lastBatch.Ops.length === 1 ? '' : 's'})`);
+    await history.undoBatch(0);
   } else if (options.wizard) { // launch the wizard
     await require('./src/wizard')(sequelize);
   } else if (options.printdata && options.inputFiles.length === 1) { // print the file's data

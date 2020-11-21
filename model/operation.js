@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
     output: {
       type: DataTypes.TEXT,
       allowNull: false
+    },
+    undone: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     }
   }, {
     tableName: 'operations',
