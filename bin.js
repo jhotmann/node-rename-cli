@@ -10,7 +10,6 @@ function epipeError(err) {
 }
 process.stdout.on('error', epipeError);
 
-const async = require('async');
 const chalk = require('chalk');
 const fs = require('fs-extra');
 const opn = require('opn');
@@ -64,11 +63,13 @@ const util = require('./src/util');
     }
   } else if (options.history !== false) {
     options.history = options.history || 10;
-    let history = new History(sequelize, options.history, !options.noUndo);
+    let history = new History(sequelize, options);
     await history.getBatches();
     await history.display();
   } else if (options.undo) { // undo previous rename
-    let history = new History(sequelize, 1, false);
+    options.history = 1;
+    options.noUndo = true;
+    let history = new History(sequelize, options);
     await history.getBatches();
     if (history.batches.length === 0) {
       console.log(chalk`{red No batches found that can be undone}`);
@@ -83,7 +84,6 @@ const util = require('./src/util');
     let operation = new Operation(options.inputFiles[0], options, sequelize);
     operation.printData();
   } else if (options.inputFiles.length > 0 && options.outputPattern) { // proceed to do the rename
-    //await rename(argv, options, sequelize);
     let batch = new Batch(argv, options, sequelize);
     await batch.complete();
   } else if (argv._.length === 0 && !options.compiled) { // launch TUI

@@ -6,14 +6,19 @@ const inquirer = require('inquirer');
 const moment = require('moment');
 const path = require('path');
 const term = require('terminal-kit').terminal;
+const yargs = require('yargs');
 
 const util = require('./util');
+const yargsOptions = require('../lib/yargsOptions');
+
+const { Batch } = require('./batch');
 
 module.exports.History = class History {
-  constructor(sequelize, count, includeUndone) {
+  constructor(sequelize, options) {
     this.sequelize = sequelize;
-    this.count = count || 10;
-    this.includeUndone = includeUndone || false;
+    this.options = options;
+    this.count = options.history || 10;
+    this.includeUndone = !options.noUndo;
     this.batches = [];
     this.page = 1;
   }
@@ -34,7 +39,7 @@ module.exports.History = class History {
     if (cls) clear();
     cwd = (cwd || process.cwd()) + path.sep;
     await async.eachSeries(ops, async (o) => {
-      console.log(`${o.output.replace(cwd, '')} → ${o.input.replace(cwd, '')}`);
+      if (this.options.verbose) console.log(`${o.output.replace(cwd, '')} → ${o.input.replace(cwd, '')}`);
       const fileExists = await fs.pathExists(o.output);
       if (!fileExists) {
         console.log(`${o.output} no longer exists`);
@@ -99,7 +104,7 @@ module.exports.History = class History {
     const theCommand = util.argvToString(JSON.parse(selectedBatch.command));
     const workingDir = selectedBatch.cwd + path.sep;
     const opsText = await async.reduce(selectedBatch.Ops, '', async (collector, o) => {
-      collector += `${o.input.replace(workingDir, '')} → ${o.output.replace(workingDir, '')}\n`;
+      collector += `${o.input.replace(workingDir, '')} → ${o.output.replace(workingDir, '')}${o.undone ? ' (undone)': ''}\n`;
       return collector;
     });
     console.log();
@@ -113,9 +118,9 @@ module.exports.History = class History {
     });
     console.log();
     let choices;
-    if (selectedBatch.undone) choices = ['Go Back', 'Re-run the Command', 'Copy the Command', 'Exit'];
-    else choices = ['Go Back', 'Undo Every Operation', 'Undo Some Operations', 'Re-run the Command', 'Copy the Command', 'Exit'];
-    const selection2 = await inquirer.prompt({
+    if (selectedBatch.undone) choices = ['Go Back', 'Re-run the Command', 'Copy the Command', 'Remove from History', 'Exit'];
+    else choices = ['Go Back', 'Undo Every Operation', 'Undo Some Operations', 'Re-run the Command', 'Copy the Command', 'Remove from History', 'Exit'];
+    const selection = await inquirer.prompt({
       type: 'list',
       loop: false,
       message: 'What would you like to do?',
@@ -123,7 +128,7 @@ module.exports.History = class History {
       default: 0,
       choices: choices
     });
-    switch (selection2.choice) {
+    switch (selection.choice) {
       case 'Go Back':
         await this.display();
         return;
@@ -134,13 +139,27 @@ module.exports.History = class History {
         await this.displayOps(index);
         return;
       case 'Re-run the Command':
-        //TODO add ability to override cwd and run the old command
+        process.chdir(selectedBatch.cwd);
+        await this.runCommand(theCommand, selectedBatch.command);
         return;
       case 'Copy the Command':
         await clipboardy.write(theCommand);
         return;
+      case 'Remove from History':
+        await selectedBatch.destroy();
+        await this.getBatches(this.page);
+        await this.display();
+        return;
       default: process.exit(0);
     }
+  }
+
+  async runCommand(command) {
+    if (this.options.verbose) console.log('Command: ' + command);
+    let argv = yargs.options(yargsOptions).parse(command.replace(/^re?name /, ''));
+    let batch = new Batch(argv, null, this.sequelize);
+    batch.setCommand(command);
+    await batch.complete();
   }
 
   async displayOps(index) {

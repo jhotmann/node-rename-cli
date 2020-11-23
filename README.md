@@ -34,7 +34,7 @@ choco install rename-cli
 ## Features
 - Variable replacement and filtering of new file name (powered by [Nunjucks](https://mozilla.github.io/nunjucks/templating.html))
 - Glob file matching
-- Undo previous rename
+- Command history with ability to undo entire batches or individual operations and re-run batches
 - Customize by adding your own variables and filters
 - Auto-indexing when renaming multiple files to the same name
 - RegEx match/replace
@@ -43,13 +43,13 @@ choco install rename-cli
 ## Usage
 ```rename [options] file(s) new-file-name```
 
-Or simply type `rename` for an interactive cli with live previews of rename operations.
+Or simply type `rename` for an interactive CLI with live previews of rename operations.
 
 *Note: Windows users (or anyone who wants to type one less letter) can use rname instead of rename since the rename command already exists in Windows*
 
-The new file name does not need to contain a file extension. If you do not specifiy a file extension the original file extension will be preserved.
+The new file name does not need to contain a file extension. If you do not specify a file extension, the original file extension will be preserved.
 
-*Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension. I recommend using `{{ext}}` (which includes the period) to preserve the original file etension.*
+*Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension. I recommend using `{{ext}}` (which includes the period) to preserve the original file extension.*
 
 ## Options
  ```-h```, ```--help```: Show help    
@@ -61,13 +61,13 @@ The new file name does not need to contain a file extension. If you do not speci
  ```-s```, ```--sim```: Simulate rename and just print new file names    
  ```-n```, ```--noindex```: Do not append an index when renaming multiple files    
  ```-d```, ```--ignoredirectories```: Do not rename directories    
- ```--sort```: Sort files before renaming. Parameter: `alphabet` (default), `date-create` (most recent first), `date-modified` (most recent first), `size` (biggest first). Include the word `reverse` before or after (use a dash or no space) to reverse the sort order.
+ ```--sort```: Sort files before renaming. Parameter: `alphabet` (default), `date-create` (most recent first), `date-modified` (most recent first), `size` (biggest first). Include the word `reverse` before or after (use a dash or no space) to reverse the sort order.  
  ```-p```, ```--prompt```: Print all rename operations to be completed and confirm before proceeding    
  ```--notrim```: Do not trim whitespace at beginning or end of ouput file name    
  ```--nomove ```: Do not move files if their new file name points to a different directory  
  ```--noext```: Do not automatically append a file extension if one isn't supplied (may be necessary if using a variable for an extension)  
  ```--createdirs```: Automatically create missing directories (cannot be used with `--nomove`)    
- ```--printdata```: Print the data available for a file
+ ```--printdata```: Print the data available for a file  
 
 ## Built-in Variables
 <details><summary>The new file name can contain any number of built-in and custom variables that will be replaced with their corresponding value. Expand for more info.</summary>
@@ -87,7 +87,7 @@ The new file name does not need to contain a file extension. If you do not speci
 
  `{{g}}` GUID: A pseudo-random globally unique identifier.
 
- `{{exif.x}}` Exif: Photo Exif Information. Replace `x` with `iso`, `fnum`, `exposure`, `date`, `width`, or `height`
+ `{{exif.x}}` EXIF: Photo EXIF Information. Replace `x` with `iso`, `fnum`, `exposure`, `date`, `width`, or `height`
 
  `{{id3.x}}` ID3: Gets ID3 tags from MP3 files. Replace `x` with `title`, `artist`, `album`, `track`, `totalTracks`, or `year`
 
