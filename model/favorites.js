@@ -11,7 +11,8 @@ module.exports = (sequelize, DataTypes) => {
     },
     alias: {
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
+      unique: true
     }
   }, {
     tableName: 'favorites',

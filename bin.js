@@ -41,6 +41,7 @@ const util = require('./src/util');
   const { Options } = require('./src/options');
   const { Batch } = require('./src/batch');
   const { History } = require('./src/history');
+  const { Favorites } = require('./src/favorites');
 
   // Parse command line arguments
   const argv = yargs
@@ -61,11 +62,15 @@ const util = require('./src/util');
     if (process.platform !== 'win32') {
       process.exit(0);
     }
-  } else if (options.history !== false) {
+  } else if (options.history !== false) { // launch history UI
     options.history = options.history || 10;
     let history = new History(sequelize, options);
     await history.getBatches();
     await history.display();
+  } else if (options.favorites !== false) { // run favorite or launch favorites UI
+    let favorites = new Favorites(sequelize, options);
+    await favorites.get();
+    if (options.favorites) await favorites.run();
   } else if (options.undo) { // undo previous rename
     options.history = 1;
     options.noUndo = true;

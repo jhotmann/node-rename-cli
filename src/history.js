@@ -118,8 +118,8 @@ module.exports.History = class History {
     });
     console.log();
     let choices;
-    if (selectedBatch.undone) choices = ['Go Back', 'Re-run the Command', 'Copy the Command', 'Remove from History', 'Exit'];
-    else choices = ['Go Back', 'Undo Every Operation', 'Undo Some Operations', 'Re-run the Command', 'Copy the Command', 'Remove from History', 'Exit'];
+    if (selectedBatch.undone) choices = ['Go Back', 'Re-run the Command', 'Copy the Command', 'Add to Favorites', 'Remove from History', 'Exit'];
+    else choices = ['Go Back', 'Undo Every Operation', 'Undo Some Operations', 'Re-run the Command', 'Copy the Command', 'Add to Favorites', 'Remove from History', 'Exit'];
     const selection = await inquirer.prompt({
       type: 'list',
       loop: false,
@@ -140,10 +140,13 @@ module.exports.History = class History {
         return;
       case 'Re-run the Command':
         process.chdir(selectedBatch.cwd);
-        await this.runCommand(theCommand, selectedBatch.command);
+        await this.runCommand(theCommand);
         return;
       case 'Copy the Command':
         await clipboardy.write(theCommand);
+        return;
+      case 'Add to Favorites':
+        await this.addToFavorites(selectedBatch.command);
         return;
       case 'Remove from History':
         await selectedBatch.destroy();
@@ -160,6 +163,19 @@ module.exports.History = class History {
     let batch = new Batch(argv, null, this.sequelize);
     batch.setCommand(command);
     await batch.complete();
+  }
+
+  async addToFavorites(command) {
+    let favoriteData = { command: command };
+    const input = await inquirer.prompt({
+      type: 'input',
+      name: 'alias',
+      message: 'Enter an alias for this favorite (optional)',
+    });
+    if (input.alias) favoriteData.alias = input.alias;
+    let favorite = this.sequelize.models.Favorites.build(favoriteData);
+    await favorite.save();
+    console.log(`Command added to favorites. ID: ${favorite.id}`);
   }
 
   async displayOps(index) {

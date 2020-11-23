@@ -21,6 +21,7 @@ module.exports.Options = class Options {
     this.createDirs = getBooleanValue(argv, '', 'createdirs');
     this.noExt = getBooleanValue(argv, '', 'noext');
     this.history = getBooleanValue(argv, '', 'history');
+    this.favorites = getBooleanValue(argv, '', 'favorites');
     this.undo = getBooleanValue(argv, 'u', 'undo');
     this.noUndo = getBooleanValue(argv, '', 'noundo');
     this.wizard = getBooleanValue(argv, 'w', 'wizard');

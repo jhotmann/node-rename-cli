@@ -17,6 +17,7 @@ async function dbInit(dbPath) {
   let sequelize = new Sequelize({ dialect: 'sqlite', storage: dbPath, logging: false });
   const Batch = await require('../model/batch')(sequelize, DataTypes);
   const Op = await require('../model/operation')(sequelize, DataTypes);
+  await require('../model/favorites')(sequelize, DataTypes);
   await Batch.hasMany(Op);
   await Op.belongsTo(Batch);
   const dbFileExists = await fs.pathExists(dbPath);
