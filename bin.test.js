@@ -9,6 +9,7 @@ const database = require('./src/database');
 const yargsOptions = require('./lib/yargsOptions');
 
 const { Batch } = require('./src/batch');
+const { History } = require('./src/history');
 
 let SEQUELIZE;
 
@@ -210,27 +211,13 @@ describe(`Test --noext option: rename test/ten.txt "test/asdf{{os.user}}" --noex
   });
 });
 
-describe(`Test undo last rename: rename -u`, () => {
+describe(`Test undo last rename via History class`, () => {
   const newFiles = ['test/ten.txt'];
   const oldFiles = [`test/asdf${os.userInfo().username}`];
   beforeAll(async () => {
-    // TODO: update when there is a better API for this
-    const lastBatch = await SEQUELIZE.models.Batch.findOne({
-      where: {
-        undone: false
-      },
-      order: [[ 'createdAt', 'DESC' ]]
-    });
-    if (lastBatch !== null) {
-      const ops = await SEQUELIZE.models.Op.findAll({
-        where: {
-          BatchId: lastBatch.id
-        }
-      });
-      async.eachSeries(ops, async (o) => { await fs.rename(o.output, o.input); });
-      lastBatch.undone = true;
-      await lastBatch.save();
-    }
+    let history = new History(SEQUELIZE, 1, false);
+    await history.getBatches();
+    await history.undoBatch(0);
   });
   test(`Old files don't exist`, async () => {
     const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });

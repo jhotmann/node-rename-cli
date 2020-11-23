@@ -1,25 +1,20 @@
 module.exports = (sequelize, DataTypes) => {
-  return sequelize.define('Op', {
+  return sequelize.define('Favorites', {
     id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true
     },
-    input: {
+    command: {
       type: DataTypes.TEXT,
       allowNull: false
     },
-    output: {
+    alias: {
       type: DataTypes.TEXT,
-      allowNull: false
-    },
-    undone: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
+      allowNull: true
     }
   }, {
-    tableName: 'operations',
-    timestamps: true,
-    updatedAt: false
+    tableName: 'favorites',
+    timestamps: true
   });
 };

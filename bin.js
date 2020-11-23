@@ -10,7 +10,6 @@ function epipeError(err) {
 }
 process.stdout.on('error', epipeError);
 
-const async = require('async');
 const chalk = require('chalk');
 const fs = require('fs-extra');
 const opn = require('opn');
@@ -41,6 +40,7 @@ const util = require('./src/util');
   const { Operation } = require('./src/operation');
   const { Options } = require('./src/options');
   const { Batch } = require('./src/batch');
+  const { History } = require('./src/history');
 
   // Parse command line arguments
   const argv = yargs
@@ -61,36 +61,29 @@ const util = require('./src/util');
     if (process.platform !== 'win32') {
       process.exit(0);
     }
+  } else if (options.history !== false) {
+    options.history = options.history || 10;
+    let history = new History(sequelize, options);
+    await history.getBatches();
+    await history.display();
   } else if (options.undo) { // undo previous rename
-    const lastBatch = await sequelize.models.Batch.findOne({
-      where: {
-        undone: false
-      },
-      order: [[ 'createdAt', 'DESC' ]]
-    });
-    if (lastBatch === null) {
+    options.history = 1;
+    options.noUndo = true;
+    let history = new History(sequelize, options);
+    await history.getBatches();
+    if (history.batches.length === 0) {
       console.log(chalk`{red No batches found that can be undone}`);
       process.exit(1);
     }
-    const ops = await sequelize.models.Op.findAll({
-      where: {
-        BatchId: lastBatch.id
-      }
-    });
-    console.log(`Undoing '${util.argvToString(JSON.parse(lastBatch.command))}' (${ops.length} operation${ops.length === 1 ? '' : 's'})`);
-    async.eachSeries(ops, async (o) => {
-      if (options.verbose) console.log(`${o.output.replace(process.cwd(), '')} → ${o.input.replace(process.cwd(), '')}`);
-      await fs.rename(o.output, o.input);
-    });
-    lastBatch.undone = true;
-    await lastBatch.save();
+    const lastBatch = history.batches[0];
+    console.log(`Undoing '${util.argvToString(JSON.parse(lastBatch.command))}' (${lastBatch.Ops.length} operation${lastBatch.Ops.length === 1 ? '' : 's'})`);
+    await history.undoBatch(0);
   } else if (options.wizard) { // launch the wizard
     await require('./src/wizard')(sequelize);
   } else if (options.printdata && options.inputFiles.length === 1) { // print the file's data
     let operation = new Operation(options.inputFiles[0], options, sequelize);
     operation.printData();
   } else if (options.inputFiles.length > 0 && options.outputPattern) { // proceed to do the rename
-    //await rename(argv, options, sequelize);
     let batch = new Batch(argv, options, sequelize);
     await batch.complete();
   } else if (argv._.length === 0 && !options.compiled) { // launch TUI

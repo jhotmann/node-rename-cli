@@ -12,7 +12,7 @@ module.exports.Options = class Options {
     this.force = getBooleanValue(argv, 'f', 'force');
     this.keep = getBooleanValue(argv, 'k', 'keep');
     this.simulate = getBooleanValue(argv, 's', 'sim');
-    this.prompt = getBooleanValue(argv, 'p', 'prompt');
+    //this.prompt = getBooleanValue(argv, 'p', 'prompt');
     this.verbose = getBooleanValue(argv, 'v', 'verbose');
     this.noIndex = getBooleanValue(argv, 'n', 'noindex');
     this.noTrim = getBooleanValue(argv, '', 'notrim');
@@ -20,6 +20,7 @@ module.exports.Options = class Options {
     this.noMove = getBooleanValue(argv, '', 'nomove');
     this.createDirs = getBooleanValue(argv, '', 'createdirs');
     this.noExt = getBooleanValue(argv, '', 'noext');
+    this.history = getBooleanValue(argv, '', 'history');
     this.undo = getBooleanValue(argv, 'u', 'undo');
     this.noUndo = getBooleanValue(argv, '', 'noundo');
     this.wizard = getBooleanValue(argv, 'w', 'wizard');
@@ -65,11 +66,12 @@ function getBooleanValue(argv, shortName, longName) {
 }
 
 function getSortOption(argv) {
-  let sort = argv.sort || 'alphabet';
+  let sort = argv.sort || 'none';
+  if (sort === 'none') return false;
   if (sortOptions.hasOwnProperty(sort)) {
     return sortOptions[sort];
   }
-  return sortOptions.alphabet;
+  return false;
 }
 
 const sortOptions = {
