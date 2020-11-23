@@ -25,7 +25,7 @@
     "chalk": "^2.3.2",
     "cli-clear": "^1.0.4",
     "clipboardy": "^2.2.0",
-    "fs-extra": "^8.1.0",
+    "fs-extra": "^9.0.1",
     "globby": "^11.0.0",
     "inquirer": "^7.1.0",
     "jpeg-exif": "^1.1.4",
