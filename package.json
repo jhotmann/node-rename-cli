@@ -34,7 +34,7 @@
     "num2fraction": "^1.2.2",
     "nunjucks": "^3.2.1",
     "opn": "^5.3.0",
-    "path-exists": "^3.0.0",
+    "path-exists": "^4.0.0",
     "readline-sync": "^1.4.10",
     "sequelize": "^6.3.5",
     "sqlite3": "^5.0.0",
