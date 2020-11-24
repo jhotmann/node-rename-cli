@@ -35,6 +35,7 @@ choco install rename-cli
 - Variable replacement and filtering of new file name (powered by [Nunjucks](https://mozilla.github.io/nunjucks/templating.html))
 - Glob file matching
 - Command history with ability to undo entire batches or individual operations and re-run batches
+- Ability to save commands as favorites to re-run them quickly
 - Customize by adding your own variables and filters
 - Auto-indexing when renaming multiple files to the same name
 - RegEx match/replace
@@ -61,13 +62,15 @@ The new file name does not need to contain a file extension. If you do not speci
  ```-s```, ```--sim```: Simulate rename and just print new file names    
  ```-n```, ```--noindex```: Do not append an index when renaming multiple files    
  ```-d```, ```--ignoredirectories```: Do not rename directories    
- ```--sort```: Sort files before renaming. Parameter: `alphabet` (default), `date-create` (most recent first), `date-modified` (most recent first), `size` (biggest first). Include the word `reverse` before or after (use a dash or no space) to reverse the sort order.  
+ ```--sort```: Sort files before renaming. Parameter: `alphabet` (default), `date-create` (most recent first), `date-modified` (most recent first), `size` (biggest first). Start the parameter with `reverse-` to reverse the sort order.  
  ```-p```, ```--prompt```: Print all rename operations to be completed and confirm before proceeding    
  ```--notrim```: Do not trim whitespace at beginning or end of ouput file name    
  ```--nomove ```: Do not move files if their new file name points to a different directory  
  ```--noext```: Do not automatically append a file extension if one isn't supplied (may be necessary if using a variable for an extension)  
  ```--createdirs```: Automatically create missing directories (cannot be used with `--nomove`)    
  ```--printdata```: Print the data available for a file  
+ ```--history```: View previously run commands and undo, re-run, copy, and favorite them  
+ ```--favorites```, ```--favourites```: View saved favorites and run or edit them. Optionally you can pass the ID or alias of a favorite to run it directly
 
 ## Built-in Variables
 <details><summary>The new file name can contain any number of built-in and custom variables that will be replaced with their corresponding value. Expand for more info.</summary>

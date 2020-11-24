@@ -10,6 +10,8 @@ const yargsOptions = require('./lib/yargsOptions');
 
 const { Batch } = require('./src/batch');
 const { History } = require('./src/history');
+const { Options } = require('./src/options');
+const { Favorites } = require('./src/favorites');
 
 let SEQUELIZE;
 
@@ -246,6 +248,29 @@ describe(`Download and rename a mp3 file: rename test/music.mp3 --createdirs "te
   });
 });
 
+describe(`Run a favorited command`, () => {
+  const oldFiles = ['test/ten.txt'];
+  const newFiles = [`test/testten.txt`];
+  let favorite;
+  beforeAll(async () => {
+    let command = 'rename --nomove test/ten.txt {{p}}{{f}}';
+    favorite = SEQUELIZE.models.Favorites.build({ command: JSON.stringify(command.split(' ')), alias: 'test'});
+    await favorite.save();
+    await runFavorite('--favorites test');
+  });
+  test(`Old files don't exist`, async () => {
+    const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(false);
+  });
+  test(`New files do exist`, async () => {
+    const result = await async.every(newFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
+    await expect(result).toBe(true);
+  });
+  afterAll(async () => {
+    if (favorite) await favorite.destroy();
+  });
+});
+
 // HELPER FUNCTIONS
 
 async function runCommand(command, undo) {
@@ -253,6 +278,14 @@ async function runCommand(command, undo) {
   let argv = yargs.options(yargsOptions).parse(`${command.replace(/^rename /, '')}${!undo ? ' --noundo' : ''}`);
   let batch = new Batch(argv, null, SEQUELIZE);
   await batch.complete();
+}
+
+async function runFavorite(command) {
+  let argv = yargs.options(yargsOptions).parse(command.replace(/^rename /, ''));
+  const options = new Options(argv);
+  const favorites = new Favorites(SEQUELIZE, options);
+  await favorites.get();
+  if (options.favorites) await favorites.run();
 }
 
 /* eslint-disable eqeqeq */

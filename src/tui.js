@@ -29,7 +29,30 @@ module.exports = async function(sequelize) {
   term('rename ');
   setHelpText();
 
-  let inputField = term.inputField({cancelable: true}, function (error, input) {
+  let keyBindingOptions = {
+    ENTER: 'submit' ,
+    KP_ENTER: 'submit' ,
+    ESCAPE: 'cancel' ,
+    BACKSPACE: 'backDelete' ,
+    DELETE: 'delete' ,
+    LEFT: 'backward' ,
+    RIGHT: 'forward' ,
+    UP: 'historyPrevious' ,
+    DOWN: 'historyNext' ,
+    HOME: 'startOfInput' ,
+    END: 'endOfInput' ,
+    TAB: 'autoComplete' ,
+    CTRL_R: 'autoCompleteUsingHistory' ,
+    CTRL_LEFT: 'previousWord' ,
+    CTRL_RIGHT: 'nextWord' ,
+    ALT_D: 'deleteNextWord' ,
+    CTRL_W: 'deletePreviousWord' ,
+    CTRL_U: 'deleteAllBefore' ,
+    CTRL_K: 'deleteAllAfter'
+  };
+  if (os.platform() === 'darwin') keyBindingOptions.DELETE = 'backDelete';
+
+  let inputField = term.inputField({cancelable: true, keyBindings: keyBindingOptions}, function (error, input) {
     if (!error && input) {
       if (TIMEOUT) clearTimeout(TIMEOUT);
       REFRESH = false;
@@ -40,7 +63,7 @@ module.exports = async function(sequelize) {
   });
 
   term.on('key', function (name) {
-    if (['CTRL_C', 'ESC'].indexOf(name) > -1) {
+    if (['CTRL_C', 'ESC', 'ESCAPE'].indexOf(name) > -1) {
       terminate();
     } else if (name === 'CTRL_H') {
       opn('https://github.com/jhotmann/node-rename-cli');

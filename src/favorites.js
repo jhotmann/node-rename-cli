@@ -1,10 +1,7 @@
 const async = require('async');
 const clear = require('cli-clear');
-const clipboardy = require('clipboardy');
-const fs = require('fs-extra');
 const inquirer = require('inquirer');
-const moment = require('moment');
-const path = require('path');
+const os = require('os');
 const term = require('terminal-kit').terminal;
 const yargs = require('yargs');
 
@@ -28,6 +25,7 @@ module.exports.Favorites = class Favorites {
         value: f.id
       };
     });
+    choices.push({ name: 'Exit', value: -1 });
     const selection = await inquirer.prompt({
       type: 'list',
       loop: false,
@@ -37,6 +35,7 @@ module.exports.Favorites = class Favorites {
       choices: choices,
       pageSize: 20
     });
+    if (selection.favorite === -1) process.exit(0);
     await this.get(selection.favorite);
     await this.displayFavorite();
   }
@@ -50,7 +49,7 @@ module.exports.Favorites = class Favorites {
       message: 'What would you like to do?',
       name: 'choice',
       default: 0,
-      choices: ['Run', 'Edit Command', 'Edit Alias', 'Delete', 'Go Back']
+      choices: ['Run', 'Edit Command', 'Edit Alias', 'Delete', 'Go Back', 'Exit']
     });
     switch (selection.choice) {
       case 'Run':
@@ -66,6 +65,9 @@ module.exports.Favorites = class Favorites {
         return;
       case 'Delete':
         await this.delete();
+        return;
+      case 'Exit':
+        process.exit(0);
         return;
       default: await this.display();
     }
@@ -114,7 +116,35 @@ module.exports.Favorites = class Favorites {
   }
 
   async editCommand() {
-    //TODO
+    console.log('Edit the command and hit ENTER to save or ESC to cancel');
+    term('Command: ');
+    let keyBindingOptions = {
+      ENTER: 'submit' ,
+      KP_ENTER: 'submit' ,
+      ESCAPE: 'cancel' ,
+      BACKSPACE: 'backDelete' ,
+      DELETE: 'delete' ,
+      LEFT: 'backward' ,
+      RIGHT: 'forward' ,
+      UP: 'historyPrevious' ,
+      DOWN: 'historyNext' ,
+      HOME: 'startOfInput' ,
+      END: 'endOfInput' ,
+      TAB: 'autoComplete' ,
+      CTRL_R: 'autoCompleteUsingHistory' ,
+      CTRL_LEFT: 'previousWord' ,
+      CTRL_RIGHT: 'nextWord' ,
+      ALT_D: 'deleteNextWord' ,
+      CTRL_W: 'deletePreviousWord' ,
+      CTRL_U: 'deleteAllBefore' ,
+      CTRL_K: 'deleteAllAfter'
+    };
+    if (os.platform() === 'darwin') keyBindingOptions.DELETE = 'backDelete';
+    const input = await term.inputField({ cancelable: true, default: util.argvToString(JSON.parse(this.selected.command)), keyBindings: keyBindingOptions }).promise;
+    if (input) {
+      this.selected.command = JSON.stringify(input.split(' '));
+      await this.selected.save();
+    }
   }
 
   async editAlias() {
