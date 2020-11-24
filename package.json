@@ -30,7 +30,7 @@
     "inquirer": "^7.1.0",
     "jpeg-exif": "^1.1.4",
     "moment": "^2.25.0",
-    "mp3tag.js": "^2.2.0",
+    "mp3tag.js": "^3.0.0",
     "num2fraction": "^1.2.2",
     "nunjucks": "^3.2.1",
     "opn": "^6.0.0",
