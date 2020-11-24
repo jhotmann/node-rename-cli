@@ -13,6 +13,8 @@ const { History } = require('./src/history');
 const { Options } = require('./src/options');
 const { Favorites } = require('./src/favorites');
 
+jest.setTimeout(30000);
+
 let SEQUELIZE;
 
 beforeAll(async () => {
@@ -231,11 +233,12 @@ describe(`Test undo last rename via History class`, () => {
   });
 });
 
-describe(`Download and rename a mp3 file: rename test/music.mp3 --createdirs "test/{{id3.year}}/{{id3.artist}}/{{id3.track|padNumber(2)}} - {{id3.title}}.{{ext}}"`, () => {
+describe(`Rename a mp3 file: rename test/music.mp3 --createdirs "test/{{id3.year}}/{{id3.artist}}/{{id3.track|padNumber(2)}} - {{id3.title}}.{{ext}}"`, () => {
   const oldFiles = ['test/music.mp3'];
   const newFiles = ['test/2019/Scott Holmes/04 - Upbeat Party.mp3'];
   beforeAll(async () => {
-    await fs.writeFile('test/music.mp3', await download('https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Scott_Holmes/Inspiring__Upbeat_Music/Scott_Holmes_-_04_-_Upbeat_Party.mp3'));
+    //await fs.writeFile('test/music.mp3', await download('https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Scott_Holmes/Inspiring__Upbeat_Music/Scott_Holmes_-_04_-_Upbeat_Party.mp3'));
+    await fs.copyFile('test-files/Scott_Holmes_-_04_-_Upbeat_Party.mp3', 'test/music.mp3');
     await runCommand('rename test/music.mp3 --createdirs "test/{{id3.year}}/{{id3.artist}}/{{id3.track|padNumber(2)}} - {{id3.title}}{{ext}}"');
   });
   test(`Old files don't exist`, async () => {
