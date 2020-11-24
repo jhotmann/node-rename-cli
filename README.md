@@ -32,21 +32,21 @@ choco install rename-cli
 ```  
 
 ## Features
-- Variable replacement and filtering of new file name (powered by [Nunjucks](https://mozilla.github.io/nunjucks/templating.html))
+- Variable replacement and filtering of new file name (powered by [Nunjucks](https://mozilla.github.io/nunjucks/templating.html)) :new:
 - Glob file matching
-- Command history with ability to undo entire batches or individual operations and re-run batches
-- Ability to save commands as favorites to re-run them quickly
+- Command history with ability to undo entire batches or individual operations and re-run batches :new:
+- Ability to save commands as favorites to re-run them quickly :new:
 - Customize by adding your own variables and filters
 - Auto-indexing when renaming multiple files to the same name
 - RegEx match/replace
-- Exif and ID3 tag support
+- EXIF and ID3 tag support
 
 ## Usage
 ```rename [options] file(s) new-file-name```
 
 Or simply type `rename` for an interactive CLI with live previews of rename operations.
 
-*Note: Windows users (or anyone who wants to type one less letter) can use rname instead of rename since the rename command already exists in Windows*
+*Note: Windows users (or anyone who wants to type one less letter) can username instead of rename since the rename command already exists in Windows*
 
 The new file name does not need to contain a file extension. If you do not specify a file extension, the original file extension will be preserved.
 
@@ -64,9 +64,9 @@ The new file name does not need to contain a file extension. If you do not speci
  ```-d```, ```--ignoredirectories```: Do not rename directories    
  ```--sort```: Sort files before renaming. Parameter: `alphabet` (default), `date-create` (most recent first), `date-modified` (most recent first), `size` (biggest first). Start the parameter with `reverse-` to reverse the sort order.  
  ```-p```, ```--prompt```: Print all rename operations to be completed and confirm before proceeding    
- ```--notrim```: Do not trim whitespace at beginning or end of ouput file name    
+ ```--notrim```: Do not trim whitespace at beginning or end of output file name    
  ```--nomove ```: Do not move files if their new file name points to a different directory  
- ```--noext```: Do not automatically append a file extension if one isn't supplied (may be necessary if using a variable for an extension)  
+ ```--noext```: Do not automatically append a file extension if one isn't supplied (sometimes necessary if using a variable for an extension)  
  ```--createdirs```: Automatically create missing directories (cannot be used with `--nomove`)    
  ```--printdata```: Print the data available for a file  
  ```--history```: View previously run commands and undo, re-run, copy, and favorite them  
