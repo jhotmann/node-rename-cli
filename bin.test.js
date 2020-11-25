@@ -1,5 +1,4 @@
 const async = require('async');
-const download = require('download');
 const fs = require('fs-extra');
 const os = require('os');
 const path = require('path');
