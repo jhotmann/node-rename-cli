@@ -1,9 +1,9 @@
 const async = require('async');
 const clear = require('cli-clear');
 const clipboardy = require('clipboardy');
+const { format } = require('date-fns');
 const fs = require('fs-extra');
 const inquirer = require('inquirer');
-const moment = require('moment');
 const path = require('path');
 const term = require('terminal-kit').terminal;
 const yargs = require('yargs');
@@ -66,7 +66,7 @@ module.exports.History = class History {
     clear();
     let choices = await async.mapSeries(this.batches, async (b) => {
       return {
-        name: `${moment(b.createdAt).format('MMMM Do YYYY, h:mm:ss a')} (${b.Ops.length} operations)${b.undone ? ' - Undone' : ''}`,
+        name: `${format(b.createdAt, 'MMMM d yyyy, h:mm:ss a')} (${b.Ops.length} operations)${b.undone ? ' - Undone' : ''}`,
         value: this.batches.indexOf(b)
       };
     });

@@ -31,9 +31,15 @@ npm-debug.log
 
 # test directory
 test
+test-files
 
 # bin directory
 bin/*
 
 # chocolatey
 chocolatey
+
+.github
+.vscode
+images
+docs

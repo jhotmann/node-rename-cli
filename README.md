@@ -4,9 +4,9 @@ A cross-platform tool for renaming files quickly, especially multiple files at o
 
 *Note* Version 7 has big changes from version 6, if you are staying on version 6 you can find the old documentation [here](docs/README6.md)
 
-![gif preview](images/rename.gif)
+![GIF preview](images/rename.gif)
 
-![Build and Test](https://github.com/jhotmann/node-rename-cli/workflows/Build%20and%20Test/badge.svg?branch=master) ![npm](https://img.shields.io/npm/dt/rename-cli?color=cb3837&label=npm%20downloads&logo=npm) ![Chocolatey](https://img.shields.io/chocolatey/dt/rename-cli?color=5c9fd8&label=chocolatey%20downloads&logo=chocolatey)
+![Build and Test](https://github.com/jhotmann/node-rename-cli/workflows/Build%20and%20Test/badge.svg?branch=master) ![NPM](https://img.shields.io/npm/dt/rename-cli?color=cb3837&label=npm%20downloads&logo=npm) ![Chocolatey](https://img.shields.io/chocolatey/dt/rename-cli?color=5c9fd8&label=chocolatey%20downloads&logo=chocolatey)
 
 ## Installation
 The preferred installation method is through NPM or Homebrew
@@ -58,11 +58,11 @@ The new file name does not need to contain a file extension. If you do not speci
  ```-w```, ```--wizard```: Run a wizard to guide you through renaming files    
  ```-u```, ```--undo```: Undo previous rename operation        
  ```-k```, ```--keep```: Keep both files when new file name already exists (append a number)    
- ```-f```, ```--force```: Force overwrite without prompt when new file name already exists and create any missing directories    
+ ```-f```, ```--force```: Forcefully overwrite without prompt when new file name already exists and create any missing directories    
  ```-s```, ```--sim```: Simulate rename and just print new file names    
  ```-n```, ```--noindex```: Do not append an index when renaming multiple files    
  ```-d```, ```--ignoredirectories```: Do not rename directories    
- ```--sort```: Sort files before renaming. Parameter: `alphabet` (default), `date-create` (most recent first), `date-modified` (most recent first), `size` (biggest first). Start the parameter with `reverse-` to reverse the sort order.  
+ ```--sort```: Sort files before renaming. Parameter: `alphabet` (default), `date-create` (most recent first), `date-modified` (most recent first), `size` (biggest to smallest). Start the parameter with `reverse-` to reverse the sort order.  
  ```-p```, ```--prompt```: Print all rename operations to be completed and confirm before proceeding    
  ```--notrim```: Do not trim whitespace at beginning or end of output file name    
  ```--nomove ```: Do not move files if their new file name points to a different directory  
@@ -79,6 +79,8 @@ The new file name does not need to contain a file extension. If you do not speci
  `{{i}}` Index: The index of the file when renaming multiple files to the same name. If you do no include `{{i}}` in your new file name, the index will be appended to the end. Use the `--noindex` option to prevent auto-indexing.
 
  `{{f}}` File name: The original name of the file.
+
+ `{{ext}}` File extension: The original extension of the file (with the `.`)
 
  `{{p}}` Parent directory: The name of the parent directory.
 
@@ -108,6 +110,8 @@ String case manipulation
   - `{{f|upper}}` - `Something Like This.txt → SOMETHING LIKE THIS.txt`
   - `{{f|camel}}` - `Something Like This.txt → somethingLikeThis.txt`
   - `{{f|pascal}}` - `Something Like This.txt → SomethingLikeThis.txt`
+  - `{{f|kebab}}` - `Something Like This.txt → something-like-this.txt`
+  - `{{f|snake}}` - `Something Like This.txt → something_like_this.txt`
 
 -----
 
@@ -121,7 +125,7 @@ bills file.pdf → MarysFile.pdf
 
 -----
 
-`date` - format a date to a specific format, the default is `YYYYMMDD` if no parameter is passed. To use your own format, simply pass the format as a string parameter to the date filter. Formatting options can be found [here](https://momentjs.com/docs/#/displaying/format/).
+`date` - format a date to a specific format, the default is `yyyyMMdd` if no parameter is passed. To use your own format, simply pass the format as a string parameter to the date filter. Formatting options can be found [here](https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table).
 
   ```sh
   rename *.txt "{{ date.current | date }}-{{f}}"
@@ -130,7 +134,7 @@ bills file.pdf → MarysFile.pdf
   b.txt → 20200502-b.txt
   c.txt → 20200502-c.txt
 
-  rename *.txt "{{ date.current | date('MM-DD-YYYY') }}-{{f}}"
+  rename *.txt "{{ date.current | date('MM-dd-yyyy') }}-{{f}}"
 
   a.txt → 05-02-2020-a.txt
   b.txt → 05-02-2020-b.txt
@@ -162,7 +166,7 @@ test/eleven.txt → Eleven.txt
 
 -----
 
-`padNumber(length)` - put leading zeroes in front of a number until it is `length` digits long. If `length` is a string it will use the string's length.
+`padNumber(length)` - put leading zeroes in front of a number until it is `length` digits long. If `length` is a string, it will use the string's length.
 
 ```sh
 rename Absent\ Sounds/* "{{id3.year}}/{{id3.artist}}/{{id3.album}}/{{ id3.track | padNumber(id3.totalTracks) }} - {{id3.title}}{{ext}}"
@@ -195,7 +199,7 @@ The first time you run the rename command a file will be created at `~/.rename/u
 // const exif = require('jpeg-exif'); // https://github.com/zhso/jpeg-exif
 // const fs = require('fs-extra'); // https://github.com/jprichardson/node-fs-extra
 // const n2f = require('num2fraction'); // https://github.com/yisibl/num2fraction
-// const moment = require('moment'); // https://momentjs.com/
+// const date-fns = require('date-fns'); // https://date-fns.org/
 
 module.exports = function(fileObj, descriptions) {
   let returnData = {};
@@ -216,37 +220,68 @@ module.exports = function(fileObj, descriptions) {
 };
 ```
 
-The fileObj that is passed to the function will look something like this:
+The `fileObj` that is passed to the function will look something like this:
 
 ```
 {
-  root: '/',
-  dir: '/Users/myusername/Projects/node-rename-cli/test',
-  base: 'somefile.txt',
+  i: '--FILEINDEXHERE--',
+  f: 'filename',
+  fileName: 'filename',
   ext: '.txt',
-  name: 'somefile',
   isDirectory: false,
-  newName: 'the-new-name-of-the-file',
-  newNameExt: '.txt',
-  options: {
-    regex: false,
-    keep: false,
-    force: false,
-    simulate: true,
-    prompt: false,
-    verbose: false,
-    noIndex: false,
-    noTrim: false,
-    ignoreDirectories: false,
-    noMove: false,
-    createDirs: false,
-    noExt: false,
-    noUndo: false,
-    sort: false
+  p: 'parent-directory-name',
+  parent: 'parent-directory-name',
+  date: {
+    current: 2020-11-25T17:41:58.303Z,
+    now: 2020-11-25T17:41:58.303Z,
+    create: 2020-11-24T23:38:25.455Z,
+    modify: 2020-11-24T23:38:25.455Z,
+    access: 2020-11-24T23:38:25.516Z
   },
-  size: 21,
-  dateCreate: 1588887960364.1008,
-  dateModify: 1588887960364.2664
+  os: {
+    homedir: '/Users/my-user-name',
+    platform: 'darwin',
+    hostname: 'ComputerName.local',
+    user: 'my-user-name'
+  },
+  guid: 'fb274642-0a6f-4fe6-8b07-0bac4db5c87b',
+  customGuid: [Function: customGuid],
+  stats: Stats {
+    dev: 16777225,
+    mode: 33188,
+    nlink: 1,
+    uid: 501,
+    gid: 20,
+    rdev: 0,
+    blksize: 4096,
+    ino: 48502576,
+    size: 1455,
+    blocks: 8,
+    atimeMs: 1606261105516.3499,
+    mtimeMs: 1606261105455.4163,
+    ctimeMs: 1606261105486.9072,
+    birthtimeMs: 1606261105455.093,
+    atime: 2020-11-24T23:38:25.516Z,
+    mtime: 2020-11-24T23:38:25.455Z,
+    ctime: 2020-11-24T23:38:25.487Z,
+    birthtime: 2020-11-24T23:38:25.455Z
+  },
+  parsedPath: {
+    root: '/',
+    dir: '/Users/my-user-name/Projects/node-rename-cli',
+    base: 'filename.txt',
+    ext: '.txt',
+    name: 'filename'
+  },
+  exif: { iso: '', fnum: '', exposure: '', date: '', width: '', height: '' },
+  id3: {
+    title: '',
+    artist: '',
+    album: '',
+    year: '',
+    track: '',
+    totalTracks: ''
+  }
 }
 ```
 
@@ -265,7 +300,7 @@ Each filter should accept a parameter that contains the value of the variable pa
 // const exif = require('jpeg-exif'); // https://github.com/zhso/jpeg-exif
 // const fs = require('fs-extra'); // https://github.com/jprichardson/node-fs-extra
 // const n2f = require('num2fraction'); // https://github.com/yisibl/num2fraction
-// const moment = require('moment'); // https://momentjs.com/
+// const { format } = require('date-fns'); // https://date-fns.org/
 
 module.exports = {
   // Create an alias for a built-in filter

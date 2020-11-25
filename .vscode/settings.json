@@ -1,0 +1,22 @@
+{
+  "ltex.workspaceFolderDictionary": {
+    "en-US": [
+      "Chocolatey",
+      "Homebrew",
+      "Nunjucks",
+      "RegEx",
+      "sudo"
+    ]
+  },
+  "ltex.workspaceFolderDisabledRules": {
+    "en-US": [
+      "DASH_RULE"
+    ]
+  },
+  "ltex.ignoreRuleInSentence": [
+    {
+      "rule": "PUNCTUATION_PARAGRAPH_END",
+      "sentence": "^\\QOptionally you can pass the ID or alias of a favorite to run it directly\\E$"
+    }
+  ]
+}

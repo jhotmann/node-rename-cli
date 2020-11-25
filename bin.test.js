@@ -181,13 +181,13 @@ describe(`Don't move a file to a new directory: rename test/eight.txt "test/anot
   });
 });
 
-describe(`Rename multiple files to the same date and append index: rename --nomove test/seven* "{{ date.current | date('YYYY-MM-DD') }}"`, () => {
+describe(`Rename multiple files to the same date and append index: rename --nomove test/seven* "{{ date.current | date('yyyy-MM-dd') }}"`, () => {
   const now = new Date();
   const nowFormatted = `${now.getFullYear()}-${now.getMonth() < 9 ? '0' : ''}${now.getMonth() + 1}-${now.getDate() < 10 ? '0' : ''}${now.getDate()}`;
   const oldFiles = ['test/seven.txt', 'test/seventeen.txt'];
   const newFiles = [`test/${nowFormatted}1.txt`, `test/${nowFormatted}2.txt`];
   beforeAll(async () => {
-    await runCommand(`rename --nomove test/seven* "{{ date.current | date('YYYY-MM-DD') }}"`);
+    await runCommand(`rename --nomove test/seven* "{{ date.current | date('yyyy-MM-dd') }}"`);
   });
   test(`Old files don't exist`, async () => {
     const result = await async.every(oldFiles, async (f) => { return await fs.pathExists(path.resolve(f)); });
