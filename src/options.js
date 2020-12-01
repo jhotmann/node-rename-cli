@@ -12,7 +12,6 @@ module.exports.Options = class Options {
     this.force = getBooleanValue(argv, 'f', 'force');
     this.keep = getBooleanValue(argv, 'k', 'keep');
     this.simulate = getBooleanValue(argv, 's', 'sim');
-    //this.prompt = getBooleanValue(argv, 'p', 'prompt');
     this.verbose = getBooleanValue(argv, 'v', 'verbose');
     this.noIndex = getBooleanValue(argv, 'n', 'noindex');
     this.noTrim = getBooleanValue(argv, '', 'notrim');
