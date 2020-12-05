@@ -198,7 +198,7 @@ The first time you run the rename command a file will be created at `~/.rename/u
 // All the built-in nodejs libraries are also available
 // const exif = require('jpeg-exif'); // https://github.com/zhso/jpeg-exif
 // const fs = require('fs-extra'); // https://github.com/jprichardson/node-fs-extra
-// const n2f = require('num2fraction'); // https://github.com/yisibl/num2fraction
+// const Fraction = require('fraction.js'); // https://github.com/infusion/Fraction.js
 // const date-fns = require('date-fns'); // https://date-fns.org/
 
 module.exports = function(fileObj, descriptions) {
@@ -299,7 +299,7 @@ Each filter should accept a parameter that contains the value of the variable pa
 // All the built-in nodejs libraries are also available
 // const exif = require('jpeg-exif'); // https://github.com/zhso/jpeg-exif
 // const fs = require('fs-extra'); // https://github.com/jprichardson/node-fs-extra
-// const n2f = require('num2fraction'); // https://github.com/yisibl/num2fraction
+// const Fraction = require('fraction.js'); // https://github.com/infusion/Fraction.js
 // const { format } = require('date-fns'); // https://date-fns.org/
 
 module.exports = {
