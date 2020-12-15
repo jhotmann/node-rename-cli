@@ -150,7 +150,7 @@ Whenever you run rename for the first time a file ```~/.rename/replacements.js``
 - prompt-sync https://github.com/0x00A/prompt-sync
 - node-dateformat https://github.com/felixge/node-dateformat
 - named-js-regexp https://github.com/edvinv/named-js-regexp
-- num2fraction https://github.com/yisibl/num2fraction
+- fraction.js https://github.com/infusion/Fraction.js
 - jpeg-exif https://github.com/zhso/jpeg-exif
 - opn https://github.com/sindresorhus/opn
 - path-exists https://github.com/sindresorhus/path-exists

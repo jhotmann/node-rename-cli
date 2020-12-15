@@ -31,7 +31,7 @@
     "inquirer": "^7.1.0",
     "jpeg-exif": "^1.1.4",
     "mp3tag.js": "^2.2.0",
-    "num2fraction": "^1.2.2",
+    "fraction.js": "^4.0.0",
     "nunjucks": "^3.2.1",
     "opn": "^6.0.0",
     "path-exists": "^4.0.0",
