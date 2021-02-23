@@ -46,7 +46,7 @@ choco install rename-cli
 
 Or simply type `rename` for an interactive CLI with live previews of rename operations.
 
-*Note: Windows users (or anyone who wants to type one less letter) can username instead of rename since the rename command already exists in Windows*
+*Note: Windows users (or anyone who wants to type one less letter) can use `rname` instead of rename since the rename command already exists in Windows*
 
 The new file name does not need to contain a file extension. If you do not specify a file extension, the original file extension will be preserved.
 
