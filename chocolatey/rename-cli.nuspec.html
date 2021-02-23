@@ -49,25 +49,28 @@ This is a nuspec. It mostly adheres to https://docs.nuget.org/create/Nuspec-Refe
     <!--<bugTrackerUrl></bugTrackerUrl>-->
     <tags>rename cli batch utility replacement regex nunjucks</tags>
     <summary>{{description}}</summary>
-    <description>## Features
-      - Variable replacement and filtering of new file name (powered by [Nunjucks](https://mozilla.github.io/nunjucks/templating.html))
-      - Glob file matching
-      - Undo previous rename
-      - Customize by adding your own variables and filters
-      - Auto-indexing when renaming multiple files to the same name
-      - RegEx match/replace
-      - Exif data support
+    <description>
+## Features
       
-      ## Usage
-      ```rename [options] file(s) new-file-name```
+- Variable replacement and filtering of new file name (powered by [Nunjucks](https://mozilla.github.io/nunjucks/templating.html))
+- Glob file matching
+- Undo previous rename
+- Customize by adding your own variables and filters
+- Auto-indexing when renaming multiple files to the same name
+- RegEx match/replace
+- Exif data support
       
-      Or simply type `rename` for an interactive cli with live previews of rename operations.
+## Usage
       
-      *Note: Windows users (or anyone who wants to type one less letter) can use rname instead of rename since the rename command already exists in Windows*
+```rename [options] file(s) new-file-name```
       
-      The new file name does not need to contain a file extension. If you do not specifiy a file extension the original file extension will be preserved.
+Or simply type `rename` for an interactive cli with live previews of rename operations.
       
-      *Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension. I recommend using `.{{ext}}` to preserve the original file etension.*</description>
+*Note: Windows users (or anyone who wants to type one less letter) can use rname instead of rename since the rename command already exists in Windows*
+      
+The new file name does not need to contain a file extension. If you do not specifiy a file extension the original file extension will be preserved.
+      
+*Note: if you include periods in your new file name, you should include a file extension to prevent whatever is after the last period from becoming the new extension. I recommend using `.{{ext}}` to preserve the original file etension.*</description>
     <!-- <releaseNotes>__REPLACE_OR_REMOVE__MarkDown_Okay</releaseNotes> -->
     <!-- =============================== -->      
 
