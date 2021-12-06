@@ -38,7 +38,7 @@
     "readline-sync": "^1.4.10",
     "sequelize": "^6.3.5",
     "sqlite3": "^5.0.0",
-    "terminal-kit": "^1.44.0",
+    "terminal-kit": "^2.2.4",
     "traverse": "^0.6.6",
     "yargs": "^15.3.0"
   },
