@@ -27,7 +27,7 @@
     "clipboardy": "^2.2.0",
     "date-fns": "^2.16.1",
     "fs-extra": "^9.0.1",
-    "globby": "^11.0.0",
+    "globby": "^12.2.0",
     "inquirer": "^7.1.0",
     "jpeg-exif": "^1.1.4",
     "mp3tag.js": "^2.2.0",
